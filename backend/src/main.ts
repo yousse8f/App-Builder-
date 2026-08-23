@@ -4,14 +4,42 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  process.env.FRONTEND_URL,
+  process.env.CLIENT_URL,
+].filter(Boolean) as string[];
+
+const isAllowedOrigin = (origin?: string) => {
+  if (!origin) {
+    return true;
+  }
+
+  if (allowedOrigins.includes(origin)) {
+    return true;
+  }
+
+  return /^(https?:\/\/.*\.vercel\.app)(?::\d+)?$/i.test(origin) ||
+    /^(https?:\/\/localhost)(?::\d+)?$/i.test(origin) ||
+    /^(https?:\/\/127\.0\.0\.1)(?::\d+)?$/i.test(origin);
+};
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
+
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
   });
-  
+
   app.setGlobalPrefix('api/v1');
   
   app.useGlobalPipes(
