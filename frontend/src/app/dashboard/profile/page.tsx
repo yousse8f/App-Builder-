@@ -29,7 +29,7 @@ export default function ClientProfile() {
       // API call will be added when backend endpoint is available
       setMessage('Profile updated successfully');
       setIsEditing(false);
-    } catch (error) {
+    } catch {
       setMessage('Failed to update profile');
     } finally {
       setLoading(false);
@@ -52,7 +52,7 @@ export default function ClientProfile() {
       setMessage('Password changed successfully');
       setShowPasswordDialog(false);
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (error) {
+    } catch {
       setMessage('Failed to change password');
     } finally {
       setLoading(false);

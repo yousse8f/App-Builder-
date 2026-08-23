@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { Users, CheckCircle, XCircle, FolderKanban, Key, Hammer, AlertCircle } from 'lucide-react';
 import StatCard from '@/components/shared/ui/StatCard';
@@ -9,7 +9,7 @@ import PageHeader from '@/components/shared/ui/PageHeader';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
-  const [stats, setStats] = useState({
+  const [stats] = useState({
     totalClients: 0,
     activeClients: 0,
     blockedClients: 0,
@@ -18,18 +18,6 @@ export default function AdminDashboard() {
     totalBuilds: 0,
     failedBuilds: 0,
   });
-
-  useEffect(() => {
-    setStats({
-      totalClients: 0,
-      activeClients: 0,
-      blockedClients: 0,
-      totalProjects: 0,
-      activeLicenses: 0,
-      totalBuilds: 0,
-      failedBuilds: 0,
-    });
-  }, []);
 
   const getGreeting = () => {
     const hour = new Date().getHours();

@@ -5,6 +5,14 @@ import { useRouter, useParams } from 'next/navigation';
 import { clientsApi } from '@/lib/api/clients';
 import { Client } from '@/types/client';
 
+type ApiError = {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+};
+
 export default function ClientDetails() {
   const router = useRouter();
   const params = useParams();
@@ -21,15 +29,48 @@ export default function ClientDetails() {
     try {
       const data = await clientsApi.getClient(params.id as string);
       setClient(data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to load client');
+    } catch (err: unknown) {
+      const apiError = err as ApiError;
+      setError(apiError.response?.data?.message || 'Failed to load client');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadClient();
+    let isMounted = true;
+
+    const fetchClient = async () => {
+      setLoading(true);
+      setError('');
+
+      try {
+        const data = await clientsApi.getClient(params.id as string);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setClient(data);
+      } catch (err: unknown) {
+        if (!isMounted) {
+          return;
+        }
+
+        const apiError = err as ApiError;
+        setError(apiError.response?.data?.message || 'Failed to load client');
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void fetchClient();
+
+    return () => {
+      isMounted = false;
+    };
   }, [params.id]);
 
   const handleBlock = async () => {
@@ -38,8 +79,9 @@ export default function ClientDetails() {
       await clientsApi.blockClient(params.id as string);
       await loadClient();
       setShowBlockDialog(false);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to block client');
+    } catch (err: unknown) {
+      const apiError = err as ApiError;
+      setError(apiError.response?.data?.message || 'Failed to block client');
     } finally {
       setActionLoading(false);
     }
@@ -51,8 +93,9 @@ export default function ClientDetails() {
       await clientsApi.unblockClient(params.id as string);
       await loadClient();
       setShowUnblockDialog(false);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to unblock client');
+    } catch (err: unknown) {
+      const apiError = err as ApiError;
+      setError(apiError.response?.data?.message || 'Failed to unblock client');
     } finally {
       setActionLoading(false);
     }

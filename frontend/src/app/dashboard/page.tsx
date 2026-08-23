@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { FolderKanban, Key, Hammer, LayoutTemplate, Plus, FolderOpen } from 'lucide-react';
 import StatCard from '@/components/shared/ui/StatCard';
@@ -10,21 +10,12 @@ import Button from '@/components/shared/Button';
 
 export default function ClientDashboard() {
   const { user } = useAuth();
-  const [stats, setStats] = useState({
+  const [stats] = useState({
     myProjects: 0,
     activeLicenses: 0,
     totalBuilds: 0,
     templates: 0,
   });
-
-  useEffect(() => {
-    setStats({
-      myProjects: 0,
-      activeLicenses: 0,
-      totalBuilds: 0,
-      templates: 0,
-    });
-  }, []);
 
   const getGreeting = () => {
     const hour = new Date().getHours();

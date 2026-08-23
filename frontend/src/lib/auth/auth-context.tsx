@@ -20,25 +20,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const checkAuth = async () => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      if (token) {
-        const response = await api.get('/auth/me');
-        setUser(response.data);
-      }
-    } catch (error) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    checkAuth();
+    let isMounted = true;
 
-    // Listen for token refresh updates
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+          const response = await api.get('/auth/me');
+          if (isMounted) {
+            setUser(response.data);
+          }
+        }
+      } catch {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void checkAuth();
+
     const handleUserUpdate = (event: CustomEvent) => {
       setUser(event.detail);
     };
@@ -46,6 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.addEventListener('auth:user-updated', handleUserUpdate as EventListener);
 
     return () => {
+      isMounted = false;
       window.removeEventListener('auth:user-updated', handleUserUpdate as EventListener);
     };
   }, []);
@@ -75,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       await api.post('/auth/logout');
-    } catch (error) {
+    } catch {
       // Silent logout on error
     } finally {
       localStorage.removeItem('accessToken');
@@ -88,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await api.get('/auth/me');
       setUser(response.data);
-    } catch (error) {
+    } catch {
       await logout();
     }
   };

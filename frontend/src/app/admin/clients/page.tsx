@@ -22,27 +22,45 @@ export default function AdminClients() {
   });
   const [total, setTotal] = useState(0);
 
-  const loadClients = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const response = await clientsApi.getClients(filters);
-      setClients(response.clients);
-      setTotal(response.total);
-    } catch (err: unknown) {
-      if (err && typeof err === 'object' && 'response' in err) {
-        const error = err as { response?: { data?: { message?: string } } };
-        setError(error.response?.data?.message || 'Failed to load clients');
-      } else {
-        setError('Failed to load clients');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadClients();
+    let isMounted = true;
+
+    const fetchClients = async () => {
+      setLoading(true);
+      setError('');
+
+      try {
+        const response = await clientsApi.getClients(filters);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setClients(response.clients);
+        setTotal(response.total);
+      } catch (err: unknown) {
+        if (!isMounted) {
+          return;
+        }
+
+        if (err && typeof err === 'object' && 'response' in err) {
+          const error = err as { response?: { data?: { message?: string } } };
+          setError(error.response?.data?.message || 'Failed to load clients');
+        } else {
+          setError('Failed to load clients');
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void fetchClients();
+
+    return () => {
+      isMounted = false;
+    };
   }, [filters]);
 
   const handleSearch = (e: React.FormEvent) => {

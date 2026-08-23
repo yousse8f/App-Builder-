@@ -5,35 +5,68 @@ import { useRouter, useParams } from 'next/navigation';
 import { clientsApi } from '@/lib/api/clients';
 import { Client, UpdateClientDto } from '@/types/client';
 
+type ApiError = {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+};
+
 export default function EditClient() {
   const router = useRouter();
   const params = useParams();
+  const clientId = typeof params.id === 'string' ? params.id : '';
+  const hasClientId = Boolean(clientId);
   const [client, setClient] = useState<Client | null>(null);
   const [formData, setFormData] = useState<UpdateClientDto>({});
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(hasClientId);
   const [saving, setSaving] = useState(false);
 
-  const loadClient = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const data = await clientsApi.getClient(params.id as string);
-      setClient(data);
-      setFormData({
-        companyName: data.companyName,
-        status: data.status,
-      });
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to load client');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadClient();
-  }, [params.id]);
+    if (!hasClientId) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const fetchClient = async () => {
+      setLoading(true);
+      setError('');
+
+      try {
+        const data = await clientsApi.getClient(clientId);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setClient(data);
+        setFormData({
+          companyName: data.companyName,
+          status: data.status,
+        });
+      } catch (err: unknown) {
+        if (!isMounted) {
+          return;
+        }
+
+        const apiError = err as ApiError;
+        setError(apiError.response?.data?.message || 'Failed to load client');
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void fetchClient();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [clientId, hasClientId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,14 +74,23 @@ export default function EditClient() {
     setSaving(true);
 
     try {
-      await clientsApi.updateClient(params.id as string, formData);
-      router.push(`/admin/clients/${params.id}`);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to update client');
+      await clientsApi.updateClient(clientId, formData);
+      router.push(`/admin/clients/${clientId}`);
+    } catch (err: unknown) {
+      const apiError = err as ApiError;
+      setError(apiError.response?.data?.message || 'Failed to update client');
     } finally {
       setSaving(false);
     }
   };
+
+  if (!hasClientId) {
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        Client not found
+      </div>
+    );
+  }
 
   if (loading) {
     return <div className="text-center py-8 text-gray-600">Loading client details...</div>;
@@ -105,7 +147,7 @@ export default function EditClient() {
               id="status"
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               value={formData.status || client.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as Client['status'] })}
             >
               <option value="ACTIVE">Active</option>
               <option value="BLOCKED">Blocked</option>

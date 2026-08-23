@@ -5,6 +5,14 @@ import { useRouter } from 'next/navigation';
 import { clientsApi } from '@/lib/api/clients';
 import { CreateClientDto } from '@/types/client';
 
+type ApiError = {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+};
+
 export default function CreateClient() {
   const router = useRouter();
   const [formData, setFormData] = useState<CreateClientDto>({
@@ -25,8 +33,9 @@ export default function CreateClient() {
     try {
       await clientsApi.createClient(formData);
       router.push('/admin/clients');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to create client');
+    } catch (err: unknown) {
+      const apiError = err as ApiError;
+      setError(apiError.response?.data?.message || 'Failed to create client');
     } finally {
       setLoading(false);
     }
@@ -118,7 +127,7 @@ export default function CreateClient() {
               id="status"
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as CreateClientDto['status'] })}
             >
               <option value="ACTIVE">Active</option>
               <option value="BLOCKED">Blocked</option>

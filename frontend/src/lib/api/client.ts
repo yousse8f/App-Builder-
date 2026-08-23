@@ -56,8 +56,8 @@ api.interceptors.response.use(
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         if (typeof window !== 'undefined') {
-          // Using window.location for auth failure as this is outside React context
-          window.location.assign('/login');
+          // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+          window.location.href = '/login';
         }
         return Promise.reject(refreshError);
       }
