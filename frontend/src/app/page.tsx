@@ -1,34 +1,33 @@
-'use client';
-
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth/auth-context';
+import Navbar from '@/components/landing/Navbar';
+import Hero from '@/components/landing/Hero';
+import TrustSection from '@/components/landing/TrustSection';
+import Features from '@/components/landing/Features';
+import HowItWorks from '@/components/landing/HowItWorks';
+import ProductPreview from '@/components/landing/ProductPreview';
+import Templates from '@/components/landing/Templates';
+import Benefits from '@/components/landing/Benefits';
+import Security from '@/components/landing/Security';
+import Pricing from '@/components/landing/Pricing';
+import FAQ from '@/components/landing/FAQ';
+import FinalCTA from '@/components/landing/FinalCTA';
+import Footer from '@/components/landing/Footer';
 
 export default function Home() {
-  const router = useRouter();
-  const { user, loading } = useAuth();
-
-  useEffect(() => {
-    if (!loading) {
-      if (user) {
-        if (user.role === 'ADMIN') {
-          router.push('/admin/dashboard');
-        } else {
-          router.push('/dashboard');
-        }
-      } else {
-        router.push('/login');
-      }
-    }
-  }, [user, loading, router]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-600">Loading...</div>
-      </div>
-    );
-  }
-
-  return null;
+  return (
+    <main className="min-h-screen">
+      <Navbar />
+      <Hero />
+      <TrustSection />
+      <Features />
+      <HowItWorks />
+      <ProductPreview />
+      <Templates />
+      <Benefits />
+      <Security />
+      <Pricing />
+      <FAQ />
+      <FinalCTA />
+      <Footer />
+    </main>
+  );
 }

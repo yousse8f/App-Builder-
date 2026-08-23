@@ -40,9 +40,14 @@ api.interceptors.response.use(
             refreshToken,
           });
 
-          const { accessToken, refreshToken: newRefreshToken } = response.data;
+          const { accessToken, refreshToken: newRefreshToken, user } = response.data;
           localStorage.setItem('accessToken', accessToken);
           localStorage.setItem('refreshToken', newRefreshToken);
+
+          // Update user in auth context if available
+          if (user && typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('auth:user-updated', { detail: user }));
+          }
 
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return api(originalRequest);
@@ -50,7 +55,10 @@ api.interceptors.response.use(
       } catch (refreshError) {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
+        if (typeof window !== 'undefined') {
+          // Using window.location for auth failure as this is outside React context
+          window.location.assign('/login');
+        }
         return Promise.reject(refreshError);
       }
     }

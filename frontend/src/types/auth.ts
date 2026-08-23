@@ -6,6 +6,8 @@ export interface Client {
   id: string;
   companyName: string;
   status: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface User {
@@ -27,6 +29,11 @@ export interface AuthResponse {
 export interface LoginCredentials {
   email: string;
   password: string;
+}
+
+export interface RegisterCredentials extends LoginCredentials {
+  name: string;
+  companyName?: string;
 }
 
 export interface RefreshResponse {
