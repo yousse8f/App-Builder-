@@ -54,14 +54,29 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('App Builder API')
-    .setDescription('API documentation for App Builder application')
+    .setDescription('API documentation for App Builder application with complete licensing system')
     .setVersion('1.0')
     .addBearerAuth()
+    .addApiKey({ type: 'apiKey', name: 'x-api-key', in: 'header' }, 'API Key')
+    .addApiKey({ type: 'apiKey', name: 'x-timestamp', in: 'header' }, 'Timestamp')
+    .addApiKey({ type: 'apiKey', name: 'x-signature', in: 'header' }, 'Signature')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
   
+  // Ensure uploads directory exists for plugin uploads
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const uploadDir = path.join(process.cwd(), 'uploads', 'plugins');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+  } catch (e) {
+    // ignore directory creation failure
+  }
+
   await app.listen(process.env.PORT ?? 3001);
 }
 bootstrap();

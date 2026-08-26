@@ -1,3 +1,9 @@
+type InputProps = {
+  label?: string;
+  error?: string;
+  className?: string;
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'className'>;
+
 export default function Input({
   label,
   type = 'text',
@@ -8,17 +14,8 @@ export default function Input({
   disabled = false,
   error,
   className = '',
-}: {
-  label?: string;
-  type?: 'text' | 'email' | 'password' | 'number' | 'tel';
-  placeholder?: string;
-  value?: string | number;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  required?: boolean;
-  disabled?: boolean;
-  error?: string;
-  className?: string;
-}) {
+  ...props
+}: InputProps) {
   return (
     <div className={className}>
       {label && (
@@ -28,6 +25,7 @@ export default function Input({
         </label>
       )}
       <input
+        {...props}
         type={type}
         placeholder={placeholder}
         value={value}

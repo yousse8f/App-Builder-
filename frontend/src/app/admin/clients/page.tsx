@@ -36,8 +36,9 @@ export default function AdminClients() {
           return;
         }
 
-        setClients(response.clients);
-        setTotal(response.total);
+        const normalizedClients = response?.clients ?? [];
+        setClients(normalizedClients);
+        setTotal(response?.total ?? normalizedClients.length ?? 0);
       } catch (err: unknown) {
         if (!isMounted) {
           return;
@@ -163,7 +164,7 @@ export default function AdminClients() {
           <AlertCircle className="w-5 h-5 flex-shrink-0" />
           <span>{error}</span>
         </div>
-      ) : clients.length === 0 ? (
+      ) : (clients ?? []).length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
           <div className="text-gray-400 mb-4">
             <AlertCircle className="w-16 h-16 mx-auto" />

@@ -155,4 +155,43 @@ export class ClientsService {
 
     return this.update(id, { status: ClientStatus.ACTIVE }, currentUserId, currentUserRole);
   }
+
+  async suspend(id: string, currentUserId: string, currentUserRole: string) {
+    if (currentUserRole !== 'ADMIN') {
+      throw new ForbiddenException('Only admins can suspend clients');
+    }
+
+    return this.update(id, { status: ClientStatus.SUSPENDED }, currentUserId, currentUserRole);
+  }
+
+  async unsuspend(id: string, currentUserId: string, currentUserRole: string) {
+    if (currentUserRole !== 'ADMIN') {
+      throw new ForbiddenException('Only admins can unsuspend clients');
+    }
+
+    return this.update(id, { status: ClientStatus.ACTIVE }, currentUserId, currentUserRole);
+  }
+
+  async delete(id: string, currentUserId: string, currentUserRole: string) {
+    if (currentUserRole !== 'ADMIN') {
+      throw new ForbiddenException('Only admins can delete clients');
+    }
+
+    const client = await this.prisma.client.findUnique({
+      where: { id },
+    });
+
+    if (!client) {
+      throw new NotFoundException('Client not found');
+    }
+
+    // Delete the user (cascade will delete the client)
+    await this.prisma.user.delete({
+      where: { id: client.userId },
+    });
+
+    return {
+      message: 'Client deleted successfully',
+    };
+  }
 }

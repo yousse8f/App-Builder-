@@ -4,42 +4,61 @@ export default function Benefits() {
   const benefits = [
     {
       icon: Zap,
-      title: 'Faster Development',
+      title: 'Save development time',
       description: 'Reduce development time with streamlined workflows and ready-to-use components.',
     },
     {
       icon: Layers,
-      title: 'Centralized Management',
+      title: 'Centralize app management',
       description: 'Control all aspects of your app development from a single platform.',
     },
     {
       icon: FolderTree,
-      title: 'Reusable Templates',
+      title: 'Start from reusable templates',
       description: 'Leverage professional templates to accelerate project initialization.',
     },
     {
       icon: TrendingUp,
-      title: 'Scalable Architecture',
+      title: 'Scale as your business grows',
       description: 'Build applications that can grow with your business needs.',
     },
     {
       icon: Shield,
-      title: 'Professional Workflow',
+      title: 'Manage clients and projects',
       description: 'Follow industry-standard practices for app development and deployment.',
     },
     {
       icon: Workflow,
-      title: 'Easy Project Organization',
+      title: 'Easy project organization',
       description: 'Keep track of multiple projects with intuitive organization tools.',
     },
   ];
 
+  const stats = [
+    {
+      value: '10x',
+      label: 'Faster Development',
+    },
+    {
+      value: '50+',
+      label: 'Templates',
+    },
+    {
+      value: '99%',
+      label: 'Uptime',
+    },
+    {
+      value: '24/7',
+      label: 'Support',
+    },
+  ];
+
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+            <h2 className="text-3xl sm:text-4xl font-semibold text-gray-900 mb-6">
               Why choose App Builder?
             </h2>
             <p className="text-lg text-gray-600 mb-8">
@@ -64,30 +83,16 @@ export default function Benefits() {
           </div>
 
           <div className="relative">
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
+            <div className="bg-gray-50 rounded-xl border border-gray-200 p-8">
               <div className="grid grid-cols-2 gap-6">
-                <div className="text-center p-6 bg-indigo-50 rounded-xl">
-                  <div className="text-4xl font-bold text-indigo-600 mb-2">10x</div>
-                  <p className="text-sm text-gray-600">Faster Development</p>
-                </div>
-                <div className="text-center p-6 bg-teal-50 rounded-xl">
-                  <div className="text-4xl font-bold text-teal-600 mb-2">50+</div>
-                  <p className="text-sm text-gray-600">Templates</p>
-                </div>
-                <div className="text-center p-6 bg-purple-50 rounded-xl">
-                  <div className="text-4xl font-bold text-purple-600 mb-2">99%</div>
-                  <p className="text-sm text-gray-600">Uptime</p>
-                </div>
-                <div className="text-center p-6 bg-orange-50 rounded-xl">
-                  <div className="text-4xl font-bold text-orange-600 mb-2">24/7</div>
-                  <p className="text-sm text-gray-600">Support</p>
-                </div>
+                {stats.map((stat, index) => (
+                  <div key={index} className="text-center p-6 bg-white rounded-lg border border-gray-100">
+                    <div className="text-4xl font-bold text-indigo-600 mb-2">{stat.value}</div>
+                    <p className="text-sm text-gray-600">{stat.label}</p>
+                  </div>
+                ))}
               </div>
             </div>
-
-            {/* Decorative Elements */}
-            <div className="absolute -top-4 -right-4 w-32 h-32 bg-indigo-100 rounded-full opacity-30 blur-2xl"></div>
-            <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-teal-100 rounded-full opacity-30 blur-2xl"></div>
           </div>
         </div>
       </div>

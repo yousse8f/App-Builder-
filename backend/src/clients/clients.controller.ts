@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
@@ -84,5 +84,44 @@ export class ClientsController {
     @CurrentUser('role') userRole: string,
   ) {
     return this.clientsService.unblock(id, userId, userRole);
+  }
+
+  @Patch(':id/suspend')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Suspend client (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Client successfully suspended' })
+  @ApiResponse({ status: 403, description: 'Access denied' })
+  async suspend(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @CurrentUser('role') userRole: string,
+  ) {
+    return this.clientsService.suspend(id, userId, userRole);
+  }
+
+  @Patch(':id/unsuspend')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Unsuspend client (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Client successfully unsuspended' })
+  @ApiResponse({ status: 403, description: 'Access denied' })
+  async unsuspend(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @CurrentUser('role') userRole: string,
+  ) {
+    return this.clientsService.unsuspend(id, userId, userRole);
+  }
+
+  @Delete(':id')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Delete client (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Client successfully deleted' })
+  @ApiResponse({ status: 403, description: 'Access denied' })
+  async delete(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @CurrentUser('role') userRole: string,
+  ) {
+    return this.clientsService.delete(id, userId, userRole);
   }
 }

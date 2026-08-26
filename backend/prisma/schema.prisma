@@ -25,6 +25,44 @@ enum ClientStatus {
   SUSPENDED
 }
 
+enum LicenseType {
+  PLUGIN
+  SCREEN_TEMPLATE
+  BUILDER
+}
+
+enum LicenseStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  BLOCKED
+  EXPIRED
+}
+
+enum ActivationStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum LicenseLogAction {
+  CREATE
+  ACTIVATE
+  VALIDATE
+  DEACTIVATE
+  SUSPEND
+  REACTIVATE
+  BLOCK
+  UNBLOCK
+  EXPIRE
+  REVOKE
+}
+
+enum PluginStatus {
+  ACTIVE
+  INACTIVE
+  DISABLED
+}
+
 model User {
   id               String     @id @default(cuid())
   name             String
@@ -33,11 +71,27 @@ model User {
   refreshTokenHash String?
   role             UserRole   @default(CLIENT)
   status           UserStatus @default(ACTIVE)
+  phone            String?
+  language         String     @default("en")
+  avatar           String?
 
   client           Client?
+  passwordResetTokens PasswordResetToken[]
 
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 }
 
 model Client {
@@ -48,6 +102,113 @@ model Client {
   userId      String       @unique
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  projects    Project[]
+  licenses    License[]
+  plugins     Plugin[]
+
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  status      String   @default("active")
+
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model License {
+  id               String        @id @default(cuid())
+  key              String        @unique
+  type             LicenseType
+  status           LicenseStatus @default(ACTIVE)
+  domain           String?
+  activationLimit  Int           @default(1)
+  activationCount  Int           @default(0)
+  expiresAt        DateTime?
+
+  clientId         String
+  client           Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  activations      LicenseActivation[]
+  logs             LicenseLog[]
+  plugins          Plugin[]
+
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+model LicenseActivation {
+  id               String           @id @default(cuid())
+  licenseId        String
+  license          License          @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  
+  domain           String
+  ipAddress        String?
+  userAgent        String?
+  activatedAt      DateTime         @default(now())
+  lastValidatedAt  DateTime?
+  status           ActivationStatus @default(ACTIVE)
+
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@unique([licenseId, domain])
+}
+
+model LicenseLog {
+  id           String         @id @default(cuid())
+  licenseId    String
+  license      License        @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+   
+  action       LicenseLogAction
+  domain       String?
+  ipAddress    String?
+  result       String
+  metadata     String?
+   
+  createdAt    DateTime       @default(now())
+}
+
+model Plugin {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  description String?
+  version     String       @default("1.0.0")
+  status      PluginStatus @default(INACTIVE)
+
+  clientId    String
+  client      Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  licenseId   String?
+  license     License?     @relation(fields: [licenseId], references: [id], onDelete: SetNull)
+
+  fileUrl     String?
+  fileKey     String?
+  iconUrl     String?
+  config      Json         @default("{}")
+
+  logs        PluginLog[]
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model PluginLog {
+  id        String   @id @default(cuid())
+  pluginId  String
+  plugin    Plugin   @relation(fields: [pluginId], references: [id], onDelete: Cascade)
+
+  action    String
+  result    String
+  details   String?
+
+  createdAt DateTime @default(now())
 }

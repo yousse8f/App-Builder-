@@ -9,8 +9,24 @@ export const clientsApi = {
     if (filters?.page) params.append('page', filters.page.toString());
     if (filters?.pageSize) params.append('pageSize', filters.pageSize.toString());
 
-    const response = await api.get<ClientsListResponse>(`/clients?${params.toString()}`);
-    return response.data;
+    const response = await api.get<ClientsListResponse | Client[]>(`/clients?${params.toString()}`);
+    const payload = response.data;
+
+    if (Array.isArray(payload)) {
+      return {
+        clients: payload,
+        total: payload.length,
+        page: filters?.page ?? 1,
+        pageSize: filters?.pageSize ?? (payload.length > 0 ? payload.length : 10),
+      };
+    }
+
+    return {
+      clients: payload?.clients ?? [],
+      total: payload?.total ?? payload?.clients?.length ?? 0,
+      page: payload?.page ?? filters?.page ?? 1,
+      pageSize: payload?.pageSize ?? filters?.pageSize ?? 10,
+    };
   },
 
   getClient: async (id: string): Promise<Client> => {

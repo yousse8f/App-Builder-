@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth/auth-context";
+import { LanguageProvider } from "@/lib/i18n/language-context";
+import GlobalLanguageSwitcher from "@/components/GlobalLanguageSwitcher";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,8 +26,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        <AuthProvider>{children}</AuthProvider>
+      <body className="min-h-full flex flex-col bg-white text-gray-900">
+        <LanguageProvider>
+          <AuthProvider>
+            <GlobalLanguageSwitcher />
+            <div className="min-h-screen">{children}</div>
+          </AuthProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

@@ -67,4 +67,74 @@ api.interceptors.response.use(
   }
 );
 
+// Auth API functions
+export const authApi = {
+  register: (data: { name: string; email: string; password: string; companyName?: string }) =>
+    api.post('/auth/register', data),
+
+  login: (data: { email: string; password: string }) =>
+    api.post('/auth/login', data),
+
+  refresh: (data: { refreshToken: string }) =>
+    api.post('/auth/refresh', data),
+
+  logout: () =>
+    api.post('/auth/logout'),
+
+  me: () =>
+    api.get('/auth/me'),
+
+  updateProfile: (data: { name?: string; companyName?: string; phone?: string; language?: string; avatar?: string }) =>
+    api.patch('/auth/profile', data),
+
+  changePassword: (data: { currentPassword: string; newPassword: string }) =>
+    api.patch('/auth/password', data),
+
+  forgotPassword: (data: { email: string }) =>
+    api.post('/auth/forgot-password', data),
+
+  resetPassword: (data: { token: string; password: string }) =>
+    api.post('/auth/reset-password', data),
+};
+
+export const pluginsApi = {
+  getAll: () => api.get('/plugins'),
+  getById: (id: string) => api.get(`/plugins/${id}`),
+  create: (data: Record<string, unknown>) => api.post('/plugins', data),
+  update: (id: string, data: Record<string, unknown>) => api.patch(`/plugins/${id}`, data),
+  remove: (id: string) => api.delete(`/plugins/${id}`),
+  activate: (id: string) => api.post(`/plugins/${id}/activate`),
+  deactivate: (id: string) => api.post(`/plugins/${id}/deactivate`),
+};
+
+// Clients API functions
+export const clientsApi = {
+  getAll: () =>
+    api.get('/clients'),
+
+  getById: (id: string) =>
+    api.get(`/clients/${id}`),
+
+  create: (data: { companyName: string; userId?: string }) =>
+    api.post('/clients', data),
+
+  update: (id: string, data: { companyName?: string; status?: string }) =>
+    api.patch(`/clients/${id}`, data),
+
+  block: (id: string) =>
+    api.patch(`/clients/${id}/block`),
+
+  unblock: (id: string) =>
+    api.patch(`/clients/${id}/unblock`),
+
+  suspend: (id: string) =>
+    api.patch(`/clients/${id}/suspend`),
+
+  unsuspend: (id: string) =>
+    api.patch(`/clients/${id}/unsuspend`),
+
+  delete: (id: string) =>
+    api.delete(`/clients/${id}`),
+};
+
 export { api as axiosClient };

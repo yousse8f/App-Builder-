@@ -11,6 +11,7 @@ import {
   LayoutTemplate, 
   Key, 
   Hammer, 
+  Puzzle,
   Settings, 
   LogOut, 
   Menu, 
@@ -18,31 +19,48 @@ import {
   ChevronRight 
 } from 'lucide-react';
 import Link from 'next/link';
+import { useLanguage } from '@/lib/i18n/language-context';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useLanguage();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const isAdminLoginRoute = pathname === '/admin/login';
 
   useEffect(() => {
     if (!loading) {
+      if (isAdminLoginRoute) {
+        if (user) {
+          router.push('/admin/dashboard');
+        }
+        return;
+      }
+
       if (!user) {
-        router.push('/login');
+        router.push('/admin/login');
       } else if (user.role !== 'ADMIN') {
         router.push('/dashboard');
       }
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, isAdminLoginRoute]);
+
+  if (isAdminLoginRoute) {
+    return <>{children}</>;
+  }
 
   const navigation = [
-    { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'Clients', href: '/admin/clients', icon: Users },
-    { name: 'Projects', href: '/admin/projects', icon: FolderKanban },
-    { name: 'Templates', href: '/admin/templates', icon: LayoutTemplate },
-    { name: 'Licenses', href: '/admin/licenses', icon: Key },
-    { name: 'Builds', href: '/admin/builds', icon: Hammer },
-    { name: 'Settings', href: '/admin/settings', icon: Settings },
+    { name: t.dashboard.dashboardLabel, href: '/admin/dashboard', icon: LayoutDashboard },
+    { name: t.dashboard.clients, href: '/admin/clients', icon: Users },
+    { name: t.dashboard.projects, href: '/admin/projects', icon: FolderKanban },
+    { name: t.dashboard.templates, href: '/admin/templates', icon: LayoutTemplate },
+    { name: t.dashboard.licenses, href: '/admin/licenses', icon: Key },
+    { name: 'Plugins', href: '/admin/plugins', icon: Puzzle },
+    { name: t.dashboard.builds, href: '/admin/builds', icon: Hammer },
+    { name: t.dashboard.settings, href: '/admin/settings', icon: Settings },
   ];
 
   if (loading) {
@@ -131,7 +149,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
               >
                 <LogOut className="w-4 h-4" />
-                <span>Logout</span>
+               <span>{t.dashboard.logout}</span>
               </button>
             </div>
           </div>
@@ -155,14 +173,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   <LayoutDashboard className="w-5 h-5 text-gray-400" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-semibold text-gray-900">Admin Dashboard</h1>
-                  <p className="text-sm text-gray-500">Welcome back, {user.name}</p>
+                  <h1 className="text-xl font-semibold text-gray-900">{t.dashboard.adminDashboard}</h1>
+                  <p className="text-sm text-gray-500">{t.dashboard.welcome} {user.name}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-4">
-                <span className="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                  Admin
-                </span>
+               <LanguageSwitcher variant="inline" />
+               <span className="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                 {t.dashboard.admin}
+               </span>
               </div>
             </div>
           </header>

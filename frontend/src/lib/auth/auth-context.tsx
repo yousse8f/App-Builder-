@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, AuthResponse, LoginCredentials } from '@/types/auth';
-import { api } from '@/lib/api/client';
+import { authApi } from '@/lib/api/client';
 
 interface AuthContextType {
   user: User | null;
@@ -13,6 +13,18 @@ interface AuthContextType {
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
+
+const normalizeUser = (value: Partial<User> | null | undefined): User | null => {
+  if (!value) {
+    return null;
+  }
+
+  return {
+    ...value,
+    status: value.status ?? 'ACTIVE',
+    client: value.client ?? null,
+  } as User;
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -27,9 +39,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const token = localStorage.getItem('accessToken');
         if (token) {
-          const response = await api.get('/auth/me');
+          const response = await authApi.me();
           if (isMounted) {
-            setUser(response.data);
+            setUser(normalizeUser(response.data));
           }
         }
       } catch {
@@ -44,56 +56,65 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     void checkAuth();
 
-    const handleUserUpdate = (event: CustomEvent) => {
-      setUser(event.detail);
+    const handleUserUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent<User | null>;
+      setUser(normalizeUser(customEvent.detail));
     };
 
-    window.addEventListener('auth:user-updated', handleUserUpdate as EventListener);
+    window.addEventListener('auth:user-updated', handleUserUpdate);
 
     return () => {
       isMounted = false;
-      window.removeEventListener('auth:user-updated', handleUserUpdate as EventListener);
+      window.removeEventListener('auth:user-updated', handleUserUpdate);
     };
   }, []);
 
+  const syncUserState = (nextUser: User | null) => {
+    const normalizedUser = normalizeUser(nextUser);
+    setUser(normalizedUser);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('auth:user-updated', { detail: normalizedUser }));
+    }
+  };
+
   const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('/auth/login', credentials);
-    const { user, accessToken, refreshToken } = response.data;
-    
+    const response = await authApi.login(credentials);
+    const { user: nextUser, accessToken, refreshToken } = response.data;
+
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
-    setUser(user);
-    
+    syncUserState(nextUser);
+
     return response.data;
   };
 
   const register = async (credentials: LoginCredentials & { name: string; companyName?: string }): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('/auth/register', credentials);
-    const { user, accessToken, refreshToken } = response.data;
-    
+    const response = await authApi.register(credentials);
+    const { user: nextUser, accessToken, refreshToken } = response.data;
+
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
-    setUser(user);
-    
+    syncUserState(nextUser);
+
     return response.data;
   };
 
   const logout = async () => {
     try {
-      await api.post('/auth/logout');
+      await authApi.logout();
     } catch {
       // Silent logout on error
     } finally {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
-      setUser(null);
+      syncUserState(null);
     }
   };
 
   const refreshUser = async () => {
     try {
-      const response = await api.get('/auth/me');
-      setUser(response.data);
+      const response = await authApi.me();
+      syncUserState(response.data);
     } catch {
       await logout();
     }

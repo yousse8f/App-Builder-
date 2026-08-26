@@ -10,6 +10,7 @@ import {
   LayoutTemplate, 
   Key, 
   Hammer, 
+  Puzzle,
   User, 
   LogOut, 
   Menu, 
@@ -17,11 +18,14 @@ import {
   ChevronRight 
 } from 'lucide-react';
 import Link from 'next/link';
+import { useLanguage } from '@/lib/i18n/language-context';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function ClientLayout({ children }: { children: ReactNode }) {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useLanguage();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -35,12 +39,13 @@ export default function ClientLayout({ children }: { children: ReactNode }) {
   }, [user, loading, router]);
 
   const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'My Projects', href: '/dashboard/projects', icon: FolderKanban },
-    { name: 'Templates', href: '/dashboard/templates', icon: LayoutTemplate },
-    { name: 'Licenses', href: '/dashboard/licenses', icon: Key },
-    { name: 'Builds', href: '/dashboard/builds', icon: Hammer },
-    { name: 'Profile', href: '/dashboard/profile', icon: User },
+    { name: t.dashboard.dashboardLabel, href: '/dashboard', icon: LayoutDashboard },
+    { name: t.dashboard.myProjects, href: '/dashboard/projects', icon: FolderKanban },
+    { name: t.dashboard.templates, href: '/dashboard/templates', icon: LayoutTemplate },
+    { name: t.dashboard.licenses, href: '/dashboard/licenses', icon: Key },
+    { name: 'Plugins', href: '/dashboard/plugins', icon: Puzzle },
+    { name: t.dashboard.builds, href: '/dashboard/builds', icon: Hammer },
+    { name: t.dashboard.profile, href: '/dashboard/profile', icon: User },
   ];
 
   if (loading) {
@@ -121,7 +126,7 @@ export default function ClientLayout({ children }: { children: ReactNode }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-white truncate">{user.name}</p>
-                  <p className="text-xs text-gray-400 truncate">{user.client?.companyName || 'Client'}</p>
+                  <p className="text-xs text-gray-400 truncate">{user.client?.companyName || t.dashboard.client}</p>
                 </div>
               </div>
               <button
@@ -129,7 +134,7 @@ export default function ClientLayout({ children }: { children: ReactNode }) {
                 className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
               >
                 <LogOut className="w-4 h-4" />
-                <span>Logout</span>
+                <span>{t.dashboard.logout}</span>
               </button>
             </div>
           </div>
@@ -153,14 +158,15 @@ export default function ClientLayout({ children }: { children: ReactNode }) {
                   <LayoutDashboard className="w-5 h-5 text-gray-400" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-semibold text-gray-900">Client Dashboard</h1>
-                  <p className="text-sm text-gray-500">Welcome back, {user.name}</p>
+                  <h1 className="text-xl font-semibold text-gray-900">{t.dashboard.clientDashboard}</h1>
+                  <p className="text-sm text-gray-500">{t.dashboard.welcome} {user.name}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-4">
-                <span className="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
-                  {user.client?.companyName || 'Client'}
-                </span>
+               <LanguageSwitcher variant="inline" />
+               <span className="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
+                 {user.client?.companyName || t.dashboard.client}
+               </span>
               </div>
             </div>
           </header>

@@ -1,3 +1,14 @@
+type ButtonProps = {
+  children: React.ReactNode;
+  variant?: 'primary' | 'secondary' | 'danger' | 'success';
+  size?: 'small' | 'medium' | 'large';
+  disabled?: boolean;
+  loading?: boolean;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  type?: 'button' | 'submit' | 'reset';
+  className?: string;
+} & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'onClick'>;
+
 export default function Button({
   children,
   variant = 'primary',
@@ -7,18 +18,10 @@ export default function Button({
   onClick,
   type = 'button',
   className = '',
-}: {
-  children: React.ReactNode;
-  variant?: 'primary' | 'secondary' | 'danger' | 'success';
-  size?: 'small' | 'medium' | 'large';
-  disabled?: boolean;
-  loading?: boolean;
-  onClick?: () => void;
-  type?: 'button' | 'submit' | 'reset';
-  className?: string;
-}) {
+  ...props
+}: ButtonProps) {
   const baseStyles = 'font-medium rounded focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors';
-  
+
   const variantStyles = {
     primary: 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500',
     secondary: 'bg-gray-200 text-gray-700 hover:bg-gray-300 focus:ring-gray-500',
@@ -34,6 +37,7 @@ export default function Button({
 
   return (
     <button
+      {...props}
       type={type}
       disabled={disabled || loading}
       onClick={onClick}

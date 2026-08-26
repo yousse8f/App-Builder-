@@ -1,21 +1,30 @@
 'use client';
 
+import { Hammer, Clock } from 'lucide-react';
+import PageHeader from '@/components/shared/ui/PageHeader';
+import Card from '@/components/shared/ui/Card';
+
 export default function ClientBuilds() {
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-6">Builds</h2>
+      <PageHeader
+        title="Builds"
+        description="View and download your application builds"
+      />
 
-      <div className="bg-white shadow rounded-lg p-12 text-center">
+      <Card className="p-12 text-center">
         <div className="text-gray-400 mb-4">
-          <svg className="mx-auto h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-          </svg>
+          <Hammer className="w-16 h-16 mx-auto" />
         </div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">Build History</h3>
-        <p className="text-gray-500 max-w-md mx-auto">
-          Build history will be available later. This section will allow you to view and download your app builds.
+        <p className="text-gray-500 max-w-md mx-auto mb-6">
+          Build history will be available in Part 5. This section will allow you to view and download your app builds, track build status, and manage deployment files.
         </p>
-      </div>
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium">
+          <Clock className="w-4 h-4" />
+          Coming Soon
+        </div>
+      </Card>
     </div>
   );
 }

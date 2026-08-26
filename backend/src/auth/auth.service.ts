@@ -6,6 +6,10 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { UserRole, UserStatus, ClientStatus } from '@prisma/client';
 
 @Injectable()
@@ -58,7 +62,15 @@ export class AuthService {
         name: user.name,
         email: user.email,
         role: user.role,
+        status: user.status,
         clientId: user.client?.id,
+        client: user.client
+          ? {
+              id: user.client.id,
+              companyName: user.client.companyName,
+              status: user.client.status,
+            }
+          : null,
       },
       ...tokens,
     };
@@ -82,7 +94,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    // Check user status
     if (user.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException('Account is not active');
+    }
+
+    // For clients, also check client status
+    if (user.role === UserRole.CLIENT && user.client?.status !== ClientStatus.ACTIVE) {
       throw new UnauthorizedException('Account is not active');
     }
 
@@ -96,7 +114,15 @@ export class AuthService {
         name: user.name,
         email: user.email,
         role: user.role,
+        status: user.status,
         clientId: user.client?.id,
+        client: user.client
+          ? {
+              id: user.client.id,
+              companyName: user.client.companyName,
+              status: user.client.status,
+            }
+          : null,
       },
       ...tokens,
     };
@@ -116,6 +142,11 @@ export class AuthService {
       });
 
       if (!user || user.status !== UserStatus.ACTIVE) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      // For clients, also check client status
+      if (user.role === UserRole.CLIENT && user.client?.status !== ClientStatus.ACTIVE) {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
@@ -146,7 +177,15 @@ export class AuthService {
           name: user.name,
           email: user.email,
           role: user.role,
+          status: user.status,
           clientId: user.client?.id,
+          client: user.client
+            ? {
+                id: user.client.id,
+                companyName: user.client.companyName,
+                status: user.client.status,
+              }
+            : null,
         },
         ...tokens,
       };
@@ -195,6 +234,95 @@ export class AuthService {
     };
   }
 
+  async updateProfile(userId: string, updateProfileDto: UpdateProfileDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { client: true },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const data: { name?: string; phone?: string; language?: string; avatar?: string; } = {};
+
+    if (updateProfileDto.name) {
+      data.name = updateProfileDto.name;
+    }
+
+    if (updateProfileDto.phone !== undefined) {
+      data.phone = updateProfileDto.phone;
+    }
+
+    if (updateProfileDto.language !== undefined) {
+      data.language = updateProfileDto.language;
+    }
+
+    if (updateProfileDto.avatar !== undefined) {
+      data.avatar = updateProfileDto.avatar;
+    }
+
+    if (updateProfileDto.companyName !== undefined) {
+      if (user.client) {
+        await this.prisma.client.update({
+          where: { id: user.client.id },
+          data: { companyName: updateProfileDto.companyName },
+        });
+      } else {
+        await this.prisma.client.create({
+          data: {
+            userId: user.id,
+            companyName: updateProfileDto.companyName,
+            status: ClientStatus.ACTIVE,
+          },
+        });
+      }
+    }
+
+    if (Object.keys(data).length > 0) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data,
+      });
+    }
+
+    return this.me(userId);
+  }
+
+  async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const passwordValid = await argon2.verify(
+      user.passwordHash,
+      changePasswordDto.currentPassword,
+    );
+
+    if (!passwordValid) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    if (changePasswordDto.currentPassword === changePasswordDto.newPassword) {
+      throw new BadRequestException('New password must be different from the current one');
+    }
+
+    const passwordHash = await argon2.hash(changePasswordDto.newPassword);
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordHash,
+      },
+    });
+
+    return { message: 'Password updated successfully' };
+  }
+
   private async storeRefreshTokenHash(
     userId: string,
     refreshToken: string,
@@ -231,6 +359,89 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
+    };
+  }
+
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    const { email } = forgotPasswordDto;
+
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      // Return success even if user doesn't exist for security
+      return {
+        message: 'If an account with that email exists, a password reset link has been sent.',
+      };
+    }
+
+    // Generate a random token
+    const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+    // Set token expiration to 1 hour from now
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 1);
+
+    // Delete any existing reset tokens for this user
+    await this.prisma.passwordResetToken.deleteMany({
+      where: { userId: user.id },
+    });
+
+    // Create new reset token
+    await this.prisma.passwordResetToken.create({
+      data: {
+        token,
+        expiresAt,
+        userId: user.id,
+      },
+    });
+
+    // In a real application, you would send an email here
+    // For now, we'll just return the token for testing purposes
+    return {
+      message: 'If an account with that email exists, a password reset link has been sent.',
+      token, // Remove this in production - for testing only
+    };
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    const { token, password } = resetPasswordDto;
+
+    const resetToken = await this.prisma.passwordResetToken.findUnique({
+      where: { token },
+      include: { user: true },
+    });
+
+    if (!resetToken) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    if (resetToken.used) {
+      throw new BadRequestException('This reset token has already been used');
+    }
+
+    if (resetToken.expiresAt < new Date()) {
+      throw new BadRequestException('Reset token has expired');
+    }
+
+    // Hash the new password
+    const passwordHash = await argon2.hash(password);
+
+    // Update user password
+    await this.prisma.user.update({
+      where: { id: resetToken.userId },
+      data: { passwordHash },
+    });
+
+    // Mark token as used
+    await this.prisma.passwordResetToken.update({
+      where: { id: resetToken.id },
+      data: { used: true },
+    });
+
+    return {
+      message: 'Password has been reset successfully',
     };
   }
 }

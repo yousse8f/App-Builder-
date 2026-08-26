@@ -1,141 +1,142 @@
-import { Smartphone, Apple, Smartphone as AndroidIcon, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+'use client';
+
+import { Smartphone, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/language-context';
 
 export default function ProductPreview() {
+  const { t } = useLanguage();
+
   const projects = [
     {
-      name: 'E-Commerce App',
-      platform: 'iOS & Android',
-      template: 'Business',
-      status: 'Active',
+      name: t.productPreview.projects[0].name,
+      platform: t.productPreview.projects[0].platform,
+      template: t.productPreview.projects[0].template,
+      status: t.productPreview.projects[0].status,
       statusIcon: CheckCircle,
       statusColor: 'green',
-      license: 'Active',
+      license: t.productPreview.projects[0].license,
     },
     {
-      name: 'Restaurant App',
-      platform: 'iOS & Android',
-      template: 'Restaurant',
-      status: 'Building',
+      name: t.productPreview.projects[1].name,
+      platform: t.productPreview.projects[1].platform,
+      template: t.productPreview.projects[1].template,
+      status: t.productPreview.projects[1].status,
       statusIcon: Clock,
       statusColor: 'yellow',
-      license: 'Active',
+      license: t.productPreview.projects[1].license,
     },
     {
-      name: 'Fitness Tracker',
-      platform: 'iOS Only',
-      template: 'Health',
-      status: 'Draft',
+      name: t.productPreview.projects[2].name,
+      platform: t.productPreview.projects[2].platform,
+      template: t.productPreview.projects[2].template,
+      status: t.productPreview.projects[2].status,
       statusIcon: AlertCircle,
       statusColor: 'blue',
-      license: 'Pending',
+      license: t.productPreview.projects[2].license,
     },
     {
-      name: 'Community Portal',
-      platform: 'iOS & Android',
-      template: 'Community',
-      status: 'Active',
+      name: t.productPreview.projects[3].name,
+      platform: t.productPreview.projects[3].platform,
+      template: t.productPreview.projects[3].template,
+      status: t.productPreview.projects[3].status,
       statusIcon: CheckCircle,
       statusColor: 'green',
-      license: 'Active',
+      license: t.productPreview.projects[3].license,
     },
   ];
 
   return (
-    <section className="py-20 bg-gray-900">
+    <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            Everything in one workspace
+          <h2 className="text-3xl sm:text-4xl font-semibold text-gray-900 mb-4">
+            {t.productPreview.title}
           </h2>
-          <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-            Manage your entire app development pipeline from a single dashboard
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            {t.productPreview.subtitle}
           </p>
         </div>
 
-        <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-2xl">
-          {/* Dashboard Header */}
-          <div className="bg-gray-750 border-b border-gray-700 px-6 py-4">
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-lg">
+          <div className="bg-gray-50 border-b border-gray-200 px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-sm">A</span>
                 </div>
-                <span className="font-semibold text-white">App Builder Dashboard</span>
+                <span className="font-semibold text-gray-900">{t.hero.dashboard.title}</span>
               </div>
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
-                  <Apple className="w-4 h-4 text-gray-400" />
-                  <AndroidIcon className="w-4 h-4 text-gray-400" />
+                  <span className="text-xs text-gray-500">iOS</span>
+                  <span className="text-xs text-gray-500">Android</span>
                 </div>
                 <div className="w-3 h-3 bg-green-500 rounded-full"></div>
               </div>
             </div>
           </div>
 
-          {/* Dashboard Content */}
           <div className="p-6">
-            {/* Stats Row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <div className="bg-gray-700/50 rounded-lg p-4">
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
                 <div className="flex items-center space-x-2 mb-2">
-                  <Smartphone className="w-4 h-4 text-indigo-400" />
-                  <span className="text-xs text-gray-400">Total Projects</span>
+                  <Smartphone className="w-4 h-4 text-indigo-600" />
+                  <span className="text-xs text-gray-600">{t.productPreview.stats.totalProjects}</span>
                 </div>
-                <p className="text-2xl font-bold text-white">4</p>
+                <p className="text-2xl font-bold text-gray-900">4</p>
               </div>
-              <div className="bg-gray-700/50 rounded-lg p-4">
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
                 <div className="flex items-center space-x-2 mb-2">
-                  <CheckCircle className="w-4 h-4 text-green-400" />
-                  <span className="text-xs text-gray-400">Active</span>
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span className="text-xs text-gray-600">{t.productPreview.stats.active}</span>
                 </div>
-                <p className="text-2xl font-bold text-white">2</p>
+                <p className="text-2xl font-bold text-gray-900">2</p>
               </div>
-              <div className="bg-gray-700/50 rounded-lg p-4">
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
                 <div className="flex items-center space-x-2 mb-2">
-                  <Clock className="w-4 h-4 text-yellow-400" />
-                  <span className="text-xs text-gray-400">Building</span>
+                  <Clock className="w-4 h-4 text-yellow-600" />
+                  <span className="text-xs text-gray-600">{t.productPreview.stats.building}</span>
                 </div>
-                <p className="text-2xl font-bold text-white">1</p>
+                <p className="text-2xl font-bold text-gray-900">1</p>
               </div>
-              <div className="bg-gray-700/50 rounded-lg p-4">
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
                 <div className="flex items-center space-x-2 mb-2">
-                  <AlertCircle className="w-4 h-4 text-blue-400" />
-                  <span className="text-xs text-gray-400">Drafts</span>
+                  <AlertCircle className="w-4 h-4 text-blue-600" />
+                  <span className="text-xs text-gray-600">{t.productPreview.stats.drafts}</span>
                 </div>
-                <p className="text-2xl font-bold text-white">1</p>
+                <p className="text-2xl font-bold text-gray-900">1</p>
               </div>
             </div>
 
-            {/* Project Table */}
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-xs text-gray-400 uppercase tracking-wider">
-                    <th className="pb-4">Project</th>
-                    <th className="pb-4">Platform</th>
-                    <th className="pb-4">Template</th>
-                    <th className="pb-4">Status</th>
-                    <th className="pb-4">License</th>
+                  <tr className="text-left text-xs text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                    <th className="pb-4 font-medium">{t.productPreview.table.project}</th>
+                    <th className="pb-4 font-medium">{t.productPreview.table.platform}</th>
+                    <th className="pb-4 font-medium">{t.productPreview.table.template}</th>
+                    <th className="pb-4 font-medium">{t.productPreview.table.status}</th>
+                    <th className="pb-4 font-medium">{t.productPreview.table.license}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-700">
+                <tbody className="divide-y divide-gray-100">
                   {projects.map((project, index) => (
                     <tr key={index} className="text-sm">
                       <td className="py-4">
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-indigo-900/50 rounded-lg flex items-center justify-center">
-                            <Smartphone className="w-5 h-5 text-indigo-400" />
+                          <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                            <Smartphone className="w-5 h-5 text-indigo-600" />
                           </div>
-                          <span className="font-medium text-white">{project.name}</span>
+                          <span className="font-medium text-gray-900">{project.name}</span>
                         </div>
                       </td>
-                      <td className="py-4 text-gray-300">{project.platform}</td>
-                      <td className="py-4 text-gray-300">{project.template}</td>
+                      <td className="py-4 text-gray-600">{project.platform}</td>
+                      <td className="py-4 text-gray-600">{project.template}</td>
                       <td className="py-4">
                         <span className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium
-                          ${project.statusColor === 'green' ? 'bg-green-900/30 text-green-400' : ''}
-                          ${project.statusColor === 'yellow' ? 'bg-yellow-900/30 text-yellow-400' : ''}
-                          ${project.statusColor === 'blue' ? 'bg-blue-900/30 text-blue-400' : ''}
+                          ${project.statusColor === 'green' ? 'bg-green-100 text-green-700' : ''}
+                          ${project.statusColor === 'yellow' ? 'bg-yellow-100 text-yellow-700' : ''}
+                          ${project.statusColor === 'blue' ? 'bg-blue-100 text-blue-700' : ''}
                         `}>
                           <project.statusIcon className="w-3 h-3" />
                           <span>{project.status}</span>
@@ -143,7 +144,7 @@ export default function ProductPreview() {
                       </td>
                       <td className="py-4">
                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                          ${project.license === 'Active' ? 'bg-green-900/30 text-green-400' : 'bg-gray-700 text-gray-400'}
+                          ${project.license === 'Active' || project.license === 'Activo' || project.license === 'Actif' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}
                         `}>
                           {project.license}
                         </span>
