@@ -11,7 +11,6 @@ import {
   UploadedFile,
   Res,
   StreamableFile,
-  Header,
   NotFoundException,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -111,25 +110,29 @@ export class PluginsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @UseInterceptors(
     FileInterceptor('file', {
-          storage: diskStorage({
-            destination: UPLOAD_DIR,
-            filename: (_req, file, cb) => {
-              const name = file.originalname.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-_.]/g, '');
-              const fileExt = extname(file.originalname);
-              cb(null, `${Date.now()}-${name}`);
-            },
-          }),
-          fileFilter: (req, file, cb) => {
-            // allow common archive/package types
-            const allowed = ['.zip', '.tar', '.tgz', '.tar.gz', '.js'];
-            const ext = extname(file.originalname).toLowerCase();
-            if (allowed.includes(ext)) cb(null, true);
-            else cb(new Error('Unsupported file type'), false);
-          },
-          limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-        }),
+      storage: diskStorage({
+        destination: UPLOAD_DIR,
+        filename: (_req, file, cb) => {
+          const name = file.originalname
+            .replace(/\s+/g, '-')
+            .replace(/[^a-zA-Z0-9-_.]/g, '');
+          cb(null, `${Date.now()}-${name}`);
+        },
+      }),
+      fileFilter: (req, file, cb) => {
+        // allow common archive/package types
+        const allowed = ['.zip', '.tar', '.tgz', '.tar.gz', '.js'];
+        const ext = extname(file.originalname).toLowerCase();
+        if (allowed.includes(ext)) cb(null, true);
+        else cb(new Error('Unsupported file type'), false);
+      },
+      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    }),
   )
-  async uploadFile(@Param('id') id: string, @UploadedFile() file: any) {
+  async uploadFile(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
     if (!file) throw new NotFoundException('No file uploaded');
     // store file metadata in plugin record
     return this.pluginsService.attachFile(id, file.filename, file.path);
@@ -137,10 +140,17 @@ export class PluginsController {
 
   // Download plugin file
   @Get(':id/file')
-  async downloadFile(@Param('id') id: string, @Res({ passthrough: true }) res: Response) {
+  async downloadFile(
+    @Param('id') id: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const file = await this.pluginsService.getFile(id);
     if (!file || !file.path) throw new NotFoundException('File not found');
-    res.setHeader('Content-Disposition', `attachment; filename="${file.filename}"`);
-    return new StreamableFile(require('fs').createReadStream(file.path));
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${file.filename}"`,
+    );
+    const fs = await import('fs');
+    return new StreamableFile(fs.createReadStream(file.path));
   }
 }

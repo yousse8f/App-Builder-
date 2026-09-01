@@ -92,8 +92,8 @@ export default function CreatePluginPage() {
         config: parsedConfig,
       });
       router.push('/admin/plugins');
-    } catch (err: any) {
-      setError(err?.message || 'Unable to create plugin. Please verify the selected client and license.');
+    } catch (err: unknown) {
+      setError((err as Error)?.message || 'Unable to create plugin. Please verify the selected client and license.');
     } finally {
       setSubmitting(false);
     }

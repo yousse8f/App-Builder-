@@ -18,7 +18,12 @@ type CurrentUser = {
 export class PluginsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private async recordLog(pluginId: string, action: string, result: string, details?: string) {
+  private async recordLog(
+    pluginId: string,
+    action: string,
+    result: string,
+    details?: string,
+  ) {
     return this.prisma.pluginLog.create({
       data: {
         pluginId,
@@ -48,19 +53,31 @@ export class PluginsService {
     } | null;
   }) {
     if (!plugin.licenseId || !plugin.license) {
-      return { valid: false, reason: 'Plugin is not linked to a valid plugin license.' };
+      return {
+        valid: false,
+        reason: 'Plugin is not linked to a valid plugin license.',
+      };
     }
 
     if (plugin.license.type !== 'PLUGIN') {
-      return { valid: false, reason: 'Only PLUGIN license types are allowed for plugins.' };
+      return {
+        valid: false,
+        reason: 'Only PLUGIN license types are allowed for plugins.',
+      };
     }
 
     if (plugin.license.clientId !== plugin.clientId) {
-      return { valid: false, reason: 'License does not belong to the same client.' };
+      return {
+        valid: false,
+        reason: 'License does not belong to the same client.',
+      };
     }
 
     if (plugin.license.status !== LicenseStatus.ACTIVE) {
-      return { valid: false, reason: `License is ${plugin.license.status.toLowerCase()}.` };
+      return {
+        valid: false,
+        reason: `License is ${plugin.license.status.toLowerCase()}.`,
+      };
     }
 
     if (plugin.license.expiresAt && new Date() > plugin.license.expiresAt) {
@@ -88,7 +105,9 @@ export class PluginsService {
     }
 
     if (user.role !== UserRole.ADMIN && plugin.client.userId !== user.id) {
-      throw new ForbiddenException('You cannot access plugins owned by another client');
+      throw new ForbiddenException(
+        'You cannot access plugins owned by another client',
+      );
     }
 
     return plugin;
@@ -151,7 +170,7 @@ export class PluginsService {
   }
 
   async findOne(id: string, user: CurrentUser) {
-    const plugin = await this.ensureAccess(id, user);
+    await this.ensureAccess(id, user);
 
     return this.prisma.plugin.findUnique({
       where: { id },
@@ -210,11 +229,15 @@ export class PluginsService {
       }
 
       if (license.clientId !== dto.clientId) {
-        throw new BadRequestException('Selected license does not belong to the client');
+        throw new BadRequestException(
+          'Selected license does not belong to the client',
+        );
       }
 
       if (license.type !== 'PLUGIN') {
-        throw new BadRequestException('Only PLUGIN licenses can be linked to plugins');
+        throw new BadRequestException(
+          'Only PLUGIN licenses can be linked to plugins',
+        );
       }
     }
 
@@ -262,7 +285,12 @@ export class PluginsService {
       },
     });
 
-    await this.recordLog(plugin.id, 'PLUGIN_CREATED', 'SUCCESS', 'Plugin created by admin');
+    await this.recordLog(
+      plugin.id,
+      'PLUGIN_CREATED',
+      'SUCCESS',
+      'Plugin created by admin',
+    );
 
     return plugin;
   }
@@ -284,11 +312,15 @@ export class PluginsService {
       }
 
       if (license.type !== 'PLUGIN') {
-        throw new BadRequestException('Only PLUGIN licenses can be linked to plugins');
+        throw new BadRequestException(
+          'Only PLUGIN licenses can be linked to plugins',
+        );
       }
 
       if (license.clientId !== plugin.clientId) {
-        throw new BadRequestException('Selected license must belong to the plugin client');
+        throw new BadRequestException(
+          'Selected license must belong to the plugin client',
+        );
       }
     }
 
@@ -311,7 +343,9 @@ export class PluginsService {
       ...(dto.licenseId !== undefined && { licenseId: dto.licenseId ?? null }),
       ...(dto.fileUrl !== undefined && { fileUrl: dto.fileUrl ?? null }),
       ...(dto.iconUrl !== undefined && { iconUrl: dto.iconUrl ?? null }),
-      ...(dto.config !== undefined && { config: dto.config as Prisma.InputJsonValue }),
+      ...(dto.config !== undefined && {
+        config: dto.config as Prisma.InputJsonValue,
+      }),
     };
 
     const updated = await this.prisma.plugin.update({
@@ -323,7 +357,12 @@ export class PluginsService {
       },
     });
 
-    await this.recordLog(updated.id, 'CONFIG_UPDATED', 'SUCCESS', 'Plugin configuration updated');
+    await this.recordLog(
+      updated.id,
+      'CONFIG_UPDATED',
+      'SUCCESS',
+      'Plugin configuration updated',
+    );
 
     return updated;
   }
@@ -338,11 +377,11 @@ export class PluginsService {
     // delete any attached file on disk
     if (plugin.fileUrl) {
       try {
-        const fs = require('fs');
+        const fs = await import('fs');
         if (fs.existsSync(plugin.fileUrl)) {
           fs.unlinkSync(plugin.fileUrl);
         }
-      } catch (e) {
+      } catch {
         // ignore file deletion failures
       }
     }
@@ -351,7 +390,12 @@ export class PluginsService {
       where: { id: plugin.id },
     });
 
-    await this.recordLog(plugin.id, 'PLUGIN_DELETED', 'SUCCESS', 'Plugin removed by admin');
+    await this.recordLog(
+      plugin.id,
+      'PLUGIN_DELETED',
+      'SUCCESS',
+      'Plugin removed by admin',
+    );
 
     return { message: 'Plugin deleted successfully' };
   }
@@ -368,7 +412,12 @@ export class PluginsService {
       },
     });
 
-    await this.recordLog(id, 'PLUGIN_FILE_UPLOADED', 'SUCCESS', `File ${filename} attached`);
+    await this.recordLog(
+      id,
+      'PLUGIN_FILE_UPLOADED',
+      'SUCCESS',
+      `File ${filename} attached`,
+    );
 
     return {
       fileKey: filename,
@@ -399,7 +448,12 @@ export class PluginsService {
         },
       });
 
-      await this.recordLog(plugin.id, 'PLUGIN_ACTIVATION_FAILED', 'BLOCKED', validation.reason);
+      await this.recordLog(
+        plugin.id,
+        'PLUGIN_ACTIVATION_FAILED',
+        'BLOCKED',
+        validation.reason,
+      );
 
       return {
         success: false,
@@ -419,7 +473,12 @@ export class PluginsService {
       },
     });
 
-    await this.recordLog(updated.id, 'PLUGIN_ACTIVATED', 'SUCCESS', 'Plugin activated successfully');
+    await this.recordLog(
+      updated.id,
+      'PLUGIN_ACTIVATED',
+      'SUCCESS',
+      'Plugin activated successfully',
+    );
 
     return {
       success: true,
@@ -442,7 +501,12 @@ export class PluginsService {
       },
     });
 
-    await this.recordLog(updated.id, 'PLUGIN_DISABLED', 'SUCCESS', 'Plugin deactivated');
+    await this.recordLog(
+      updated.id,
+      'PLUGIN_DISABLED',
+      'SUCCESS',
+      'Plugin deactivated',
+    );
 
     return {
       success: true,

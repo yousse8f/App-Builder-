@@ -8,6 +8,10 @@ import { AuthModule } from './auth/auth.module';
 import { ClientsModule } from './clients/clients.module';
 import { LicensesModule } from './licenses/licenses.module';
 import { PluginsModule } from './plugins/plugins.module';
+import { ProjectsModule } from './projects/projects.module';
+import { BuildsModule } from './builds/builds.module';
+import { UploadModule } from './upload/upload.module';
+import { ScreenshotsModule } from './screenshots/screenshots.module';
 
 @Module({
   imports: [
@@ -25,6 +29,10 @@ import { PluginsModule } from './plugins/plugins.module';
     ClientsModule,
     LicensesModule,
     PluginsModule,
+    ProjectsModule,
+    BuildsModule,
+    UploadModule,
+    ScreenshotsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

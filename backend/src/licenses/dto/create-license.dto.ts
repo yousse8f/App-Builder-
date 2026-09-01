@@ -1,4 +1,11 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsDateString, IsInt, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsDateString,
+  IsInt,
+  Min,
+} from 'class-validator';
 import { LicenseType } from '@prisma/client';
 
 export class CreateLicenseDto {

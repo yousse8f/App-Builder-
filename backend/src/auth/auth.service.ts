@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as argon2 from 'argon2';
@@ -8,6 +13,7 @@ import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import type { SignOptions } from 'jsonwebtoken';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { UserRole, UserStatus, ClientStatus } from '@prisma/client';
@@ -100,7 +106,10 @@ export class AuthService {
     }
 
     // For clients, also check client status
-    if (user.role === UserRole.CLIENT && user.client?.status !== ClientStatus.ACTIVE) {
+    if (
+      user.role === UserRole.CLIENT &&
+      user.client?.status !== ClientStatus.ACTIVE
+    ) {
       throw new UnauthorizedException('Account is not active');
     }
 
@@ -130,11 +139,14 @@ export class AuthService {
 
   async refresh(refreshDto: RefreshDto) {
     try {
-      const payload = await this.jwtService.verifyAsync(refreshDto.refreshToken, {
-        secret:
-          this.configService.get<string>('JWT_REFRESH_SECRET') ||
-          'default-refresh-secret',
-      });
+      const payload = await this.jwtService.verifyAsync<{ sub: string }>(
+        refreshDto.refreshToken,
+        {
+          secret:
+            this.configService.get<string>('JWT_REFRESH_SECRET') ||
+            'default-refresh-secret',
+        },
+      );
 
       const user = await this.prisma.user.findUnique({
         where: { id: payload.sub },
@@ -146,7 +158,10 @@ export class AuthService {
       }
 
       // For clients, also check client status
-      if (user.role === UserRole.CLIENT && user.client?.status !== ClientStatus.ACTIVE) {
+      if (
+        user.role === UserRole.CLIENT &&
+        user.client?.status !== ClientStatus.ACTIVE
+      ) {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
@@ -163,11 +178,7 @@ export class AuthService {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
-      const tokens = await this.generateTokens(
-        user.id,
-        user.email,
-        user.role,
-      );
+      const tokens = await this.generateTokens(user.id, user.email, user.role);
 
       await this.storeRefreshTokenHash(user.id, tokens.refreshToken);
 
@@ -189,7 +200,7 @@ export class AuthService {
         },
         ...tokens,
       };
-    } catch (error) {
+    } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
   }
@@ -244,7 +255,12 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    const data: { name?: string; phone?: string; language?: string; avatar?: string; } = {};
+    const data: {
+      name?: string;
+      phone?: string;
+      language?: string;
+      avatar?: string;
+    } = {};
 
     if (updateProfileDto.name) {
       data.name = updateProfileDto.name;
@@ -308,7 +324,9 @@ export class AuthService {
     }
 
     if (changePasswordDto.currentPassword === changePasswordDto.newPassword) {
-      throw new BadRequestException('New password must be different from the current one');
+      throw new BadRequestException(
+        'New password must be different from the current one',
+      );
     }
 
     const passwordHash = await argon2.hash(changePasswordDto.newPassword);
@@ -323,10 +341,7 @@ export class AuthService {
     return { message: 'Password updated successfully' };
   }
 
-  private async storeRefreshTokenHash(
-    userId: string,
-    refreshToken: string,
-  ) {
+  private async storeRefreshTokenHash(userId: string, refreshToken: string) {
     const refreshTokenHash = await argon2.hash(refreshToken);
 
     await this.prisma.user.update({
@@ -342,18 +357,17 @@ export class AuthService {
 
     const accessToken = await this.jwtService.signAsync(payload, {
       secret:
-        this.configService.get<string>('JWT_ACCESS_SECRET') ||
-        'default-secret',
-      expiresIn:
-        (this.configService.get<string>('JWT_ACCESS_EXPIRES') || '15m') as any,
+        this.configService.get<string>('JWT_ACCESS_SECRET') || 'default-secret',
+      expiresIn: (this.configService.get<string>('JWT_ACCESS_EXPIRES') ||
+        '15m') as SignOptions['expiresIn'],
     });
 
     const refreshToken = await this.jwtService.signAsync(payload, {
       secret:
         this.configService.get<string>('JWT_REFRESH_SECRET') ||
         'default-refresh-secret',
-      expiresIn:
-        (this.configService.get<string>('JWT_REFRESH_EXPIRES') || '7d') as any,
+      expiresIn: (this.configService.get<string>('JWT_REFRESH_EXPIRES') ||
+        '7d') as SignOptions['expiresIn'],
     });
 
     return {
@@ -372,12 +386,15 @@ export class AuthService {
     if (!user) {
       // Return success even if user doesn't exist for security
       return {
-        message: 'If an account with that email exists, a password reset link has been sent.',
+        message:
+          'If an account with that email exists, a password reset link has been sent.',
       };
     }
 
     // Generate a random token
-    const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const token =
+      Math.random().toString(36).substring(2, 15) +
+      Math.random().toString(36).substring(2, 15);
 
     // Set token expiration to 1 hour from now
     const expiresAt = new Date();
@@ -400,7 +417,8 @@ export class AuthService {
     // In a real application, you would send an email here
     // For now, we'll just return the token for testing purposes
     return {
-      message: 'If an account with that email exists, a password reset link has been sent.',
+      message:
+        'If an account with that email exists, a password reset link has been sent.',
       token, // Remove this in production - for testing only
     };
   }
@@ -443,5 +461,69 @@ export class AuthService {
     return {
       message: 'Password has been reset successfully',
     };
+  }
+
+  async validateToken(token: string | undefined) {
+    if (!token) {
+      throw new UnauthorizedException('Token is required');
+    }
+
+    try {
+      const payload = await this.jwtService.verifyAsync<{
+        sub: string;
+        email: string;
+        role: string;
+      }>(token, {
+        secret:
+          this.configService.get<string>('JWT_ACCESS_SECRET') ||
+          'default-secret',
+      });
+
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+        include: { client: true },
+      });
+
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      if (user.status !== UserStatus.ACTIVE) {
+        throw new UnauthorizedException('User account is not active');
+      }
+
+      // For CLIENT role, ensure they have an active client
+      if (user.role === UserRole.CLIENT) {
+        if (!user.client) {
+          throw new UnauthorizedException(
+            'Client profile not found. Please contact support.',
+          );
+        }
+        if (user.client.status !== ClientStatus.ACTIVE) {
+          throw new UnauthorizedException('Client account is not active');
+        }
+      }
+
+      return {
+        valid: true,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          status: user.status,
+          clientId: user.client?.id,
+          client: user.client
+            ? {
+                id: user.client.id,
+                companyName: user.client.companyName,
+                status: user.client.status,
+              }
+            : null,
+        },
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Invalid or expired token');
+    }
   }
 }

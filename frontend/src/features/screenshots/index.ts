@@ -1,0 +1,1 @@
+export { default as ScreenshotsStudio } from './components/ScreenshotsStudio';

@@ -4,19 +4,19 @@ import { ReactNode, useState } from 'react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
-import { 
-  LayoutDashboard, 
-  Users, 
-  FolderKanban, 
-  LayoutTemplate, 
-  Key, 
-  Hammer, 
+import {
+  LayoutDashboard,
+  Users,
+  FolderKanban,
+  Key,
+  Hammer,
   Puzzle,
-  Settings, 
-  LogOut, 
-  Menu, 
+  Settings,
+  LogOut,
+  Menu,
   X,
-  ChevronRight 
+  ChevronRight,
+  Layout
 } from 'lucide-react';
 import Link from 'next/link';
 import { useLanguage } from '@/lib/i18n/language-context';
@@ -56,7 +56,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     { name: t.dashboard.dashboardLabel, href: '/admin/dashboard', icon: LayoutDashboard },
     { name: t.dashboard.clients, href: '/admin/clients', icon: Users },
     { name: t.dashboard.projects, href: '/admin/projects', icon: FolderKanban },
-    { name: t.dashboard.templates, href: '/admin/templates', icon: LayoutTemplate },
+    { name: (t.dashboard as any).templates || 'Templates', href: '/admin/templates', icon: Layout },
     { name: t.dashboard.licenses, href: '/admin/licenses', icon: Key },
     { name: 'Plugins', href: '/admin/plugins', icon: Puzzle },
     { name: t.dashboard.builds, href: '/admin/builds', icon: Hammer },

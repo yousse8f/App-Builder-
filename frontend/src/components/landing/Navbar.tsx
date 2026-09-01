@@ -20,11 +20,11 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
-    { name: t.nav.features, href: '#features' },
-    { name: t.nav.howItWorks, href: '#how-it-works' },
-    { name: t.nav.templates, href: '#templates' },
-    { name: t.nav.pricing, href: '#pricing' },
-    { name: t.nav.faq, href: '#faq' },
+    { name: t.nav.features, href: '#features', key: 'features' },
+    { name: t.nav.howItWorks, href: '#how-it-works', key: 'how-it-works' },
+    { name: t.nav.templates, href: '#templates', key: 'templates' },
+    { name: t.nav.pricing, href: '#pricing', key: 'pricing' },
+    { name: t.nav.faq, href: '#faq', key: 'faq' },
   ];
 
   return (
@@ -53,7 +53,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
               <a
-                key={link.name}
+                key={link.key}
                 href={link.href}
                 className={`text-sm font-medium transition-colors duration-200 hover:text-indigo-600 ${
                   isScrolled ? 'text-gray-600' : 'text-gray-600'
@@ -106,7 +106,7 @@ export default function Navbar() {
             <div className="flex flex-col space-y-4">
               {navLinks.map((link) => (
                 <a
-                  key={link.name}
+                  key={link.key}
                   href={link.href}
                   className="text-gray-600 hover:text-indigo-600 transition-colors text-sm font-medium py-2"
                   onClick={() => setIsMobileMenuOpen(false)}

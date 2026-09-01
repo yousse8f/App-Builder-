@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Key, Shield, AlertTriangle, CheckCircle, XCircle, Clock, ExternalLink, FileText, ArrowLeft, Copy } from 'lucide-react';
 import PageHeader from '@/components/shared/ui/PageHeader';
@@ -19,8 +19,7 @@ export default function LicenseDetails() {
   const [loading, setLoading] = useState(true);
   const [logsLoading, setLogsLoading] = useState(false);
 
-  const fetchLicenseDetails = async () => {
-    setLoading(true);
+  const fetchLicenseDetails = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:3001/api/v1/licenses/${licenseId}`, {
@@ -42,10 +41,9 @@ export default function LicenseDetails() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [licenseId, router]);
 
-  const fetchLicenseLogs = async () => {
-    setLogsLoading(true);
+  const fetchLicenseLogs = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:3001/api/v1/licenses/${licenseId}/logs`, {
@@ -62,19 +60,18 @@ export default function LicenseDetails() {
     } finally {
       setLogsLoading(false);
     }
-  };
+  }, [licenseId]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!licenseId) {
       return;
     }
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoading(true);
+    setLogsLoading(true);
     void fetchLicenseDetails();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchLicenseLogs();
-  }, [licenseId]);
+  }, [licenseId, fetchLicenseDetails, fetchLicenseLogs]);
 
   const handleUpdateLicenseStatus = async (status: LicenseStatus) => {
     try {

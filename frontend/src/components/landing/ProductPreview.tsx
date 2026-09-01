@@ -10,7 +10,6 @@ export default function ProductPreview() {
     {
       name: t.productPreview.projects[0].name,
       platform: t.productPreview.projects[0].platform,
-      template: t.productPreview.projects[0].template,
       status: t.productPreview.projects[0].status,
       statusIcon: CheckCircle,
       statusColor: 'green',
@@ -19,7 +18,6 @@ export default function ProductPreview() {
     {
       name: t.productPreview.projects[1].name,
       platform: t.productPreview.projects[1].platform,
-      template: t.productPreview.projects[1].template,
       status: t.productPreview.projects[1].status,
       statusIcon: Clock,
       statusColor: 'yellow',
@@ -28,7 +26,6 @@ export default function ProductPreview() {
     {
       name: t.productPreview.projects[2].name,
       platform: t.productPreview.projects[2].platform,
-      template: t.productPreview.projects[2].template,
       status: t.productPreview.projects[2].status,
       statusIcon: AlertCircle,
       statusColor: 'blue',
@@ -37,7 +34,6 @@ export default function ProductPreview() {
     {
       name: t.productPreview.projects[3].name,
       platform: t.productPreview.projects[3].platform,
-      template: t.productPreview.projects[3].template,
       status: t.productPreview.projects[3].status,
       statusIcon: CheckCircle,
       statusColor: 'green',
@@ -114,7 +110,6 @@ export default function ProductPreview() {
                   <tr className="text-left text-xs text-gray-500 uppercase tracking-wider border-b border-gray-200">
                     <th className="pb-4 font-medium">{t.productPreview.table.project}</th>
                     <th className="pb-4 font-medium">{t.productPreview.table.platform}</th>
-                    <th className="pb-4 font-medium">{t.productPreview.table.template}</th>
                     <th className="pb-4 font-medium">{t.productPreview.table.status}</th>
                     <th className="pb-4 font-medium">{t.productPreview.table.license}</th>
                   </tr>
@@ -131,7 +126,6 @@ export default function ProductPreview() {
                         </div>
                       </td>
                       <td className="py-4 text-gray-600">{project.platform}</td>
-                      <td className="py-4 text-gray-600">{project.template}</td>
                       <td className="py-4">
                         <span className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium
                           ${project.statusColor === 'green' ? 'bg-green-100 text-green-700' : ''}

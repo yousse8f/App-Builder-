@@ -1,5 +1,22 @@
-import { Controller, Get, Post, Put, Body, Param, UseGuards, Request, Ip } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiHeader } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Body,
+  Param,
+  UseGuards,
+  Request,
+  Ip,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiHeader,
+} from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { LicensesService } from './licenses.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -22,14 +39,23 @@ export class LicensesController {
   @UseGuards(HmacAuthGuard)
   @Throttle({ default: { limit: 60, ttl: 60000 } })
   @ApiOperation({ summary: 'Validate a license key' })
-  @ApiHeader({ name: 'x-api-key', description: 'API key for HMAC authentication' })
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API key for HMAC authentication',
+  })
   @ApiHeader({ name: 'x-timestamp', description: 'Unix timestamp for request' })
   @ApiHeader({ name: 'x-signature', description: 'HMAC-SHA256 signature' })
   @ApiResponse({ status: 200, description: 'License validation result' })
   @ApiResponse({ status: 400, description: 'Invalid request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid authentication' })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid authentication',
+  })
   @ApiResponse({ status: 429, description: 'Too many requests' })
-  async validateLicense(@Body() dto: ValidateLicenseDto, @Ip() ipAddress?: string) {
+  async validateLicense(
+    @Body() dto: ValidateLicenseDto,
+    @Ip() ipAddress?: string,
+  ) {
     return this.licensesService.validateLicense(dto, ipAddress || null);
   }
 
@@ -37,14 +63,26 @@ export class LicensesController {
   @UseGuards(HmacAuthGuard)
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @ApiOperation({ summary: 'Activate a license for a domain' })
-  @ApiHeader({ name: 'x-api-key', description: 'API key for HMAC authentication' })
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API key for HMAC authentication',
+  })
   @ApiHeader({ name: 'x-timestamp', description: 'Unix timestamp for request' })
   @ApiHeader({ name: 'x-signature', description: 'HMAC-SHA256 signature' })
   @ApiResponse({ status: 201, description: 'License activated successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid request or activation failed' })
-  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid authentication' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid request or activation failed',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid authentication',
+  })
   @ApiResponse({ status: 429, description: 'Too many requests' })
-  async activateLicense(@Body() dto: ActivateLicenseDto, @Ip() ipAddress?: string) {
+  async activateLicense(
+    @Body() dto: ActivateLicenseDto,
+    @Ip() ipAddress?: string,
+  ) {
     return this.licensesService.activateLicense(dto, ipAddress || null);
   }
 
@@ -52,14 +90,26 @@ export class LicensesController {
   @UseGuards(HmacAuthGuard)
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @ApiOperation({ summary: 'Deactivate a license for a domain' })
-  @ApiHeader({ name: 'x-api-key', description: 'API key for HMAC authentication' })
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API key for HMAC authentication',
+  })
   @ApiHeader({ name: 'x-timestamp', description: 'Unix timestamp for request' })
   @ApiHeader({ name: 'x-signature', description: 'HMAC-SHA256 signature' })
   @ApiResponse({ status: 200, description: 'License deactivated successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid request or deactivation failed' })
-  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid authentication' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid request or deactivation failed',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid authentication',
+  })
   @ApiResponse({ status: 429, description: 'Too many requests' })
-  async deactivateLicense(@Body() dto: DeactivateLicenseDto, @Ip() ipAddress?: string) {
+  async deactivateLicense(
+    @Body() dto: DeactivateLicenseDto,
+    @Ip() ipAddress?: string,
+  ) {
     return this.licensesService.deactivateLicense(dto, ipAddress || null);
   }
 
@@ -69,10 +119,16 @@ export class LicensesController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Deactivate a license for a domain (Admin only)' })
   @ApiResponse({ status: 200, description: 'License deactivated successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid request or deactivation failed' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid request or deactivation failed',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
-  async adminDeactivateLicense(@Body() dto: DeactivateLicenseDto, @Ip() ipAddress?: string) {
+  async adminDeactivateLicense(
+    @Body() dto: DeactivateLicenseDto,
+    @Ip() ipAddress?: string,
+  ) {
     return this.licensesService.deactivateLicense(dto, ipAddress || null);
   }
 
@@ -96,14 +152,22 @@ export class LicensesController {
   @ApiResponse({ status: 200, description: 'List of client licenses' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getMyLicenses(@Request() req) {
+    const request = req as { user?: { id: string; client?: { id: string } } };
+
+    // Try to get client from user object first (more efficient)
+    if (request.user?.client?.id) {
+      return this.licensesService.getClientLicenses(request.user.client.id);
+    }
+
+    // Fallback to database query
     const client = await this.licensesService['prisma'].client.findFirst({
-      where: { userId: req.user.id },
+      where: { userId: request.user?.id },
     });
-    
+
     if (!client) {
       return [];
     }
-    
+
     return this.licensesService.getClientLicenses(client.id);
   }
 
@@ -141,7 +205,10 @@ export class LicensesController {
   @ApiOperation({ summary: 'Update license status (Admin only)' })
   @ApiParam({ name: 'id', description: 'License ID' })
   @ApiResponse({ status: 200, description: 'License status updated' })
-  @ApiResponse({ status: 400, description: 'Invalid request or invalid status transition' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid request or invalid status transition',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
   @ApiResponse({ status: 404, description: 'License not found' })
@@ -160,7 +227,10 @@ export class LicensesController {
   @ApiOperation({ summary: 'Unblock a license (Admin only)' })
   @ApiParam({ name: 'id', description: 'License ID' })
   @ApiResponse({ status: 200, description: 'License unblocked successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid request or license cannot be unblocked' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid request or license cannot be unblocked',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
   @ApiResponse({ status: 404, description: 'License not found' })

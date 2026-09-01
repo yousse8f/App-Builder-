@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { pluginsApi } from '@/lib/api/client';
 
 type PluginDetail = {
@@ -30,7 +30,7 @@ export default function ClientPluginDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const loadPlugin = async () => {
+  const loadPlugin = useCallback(async () => {
     try {
       const { data } = await pluginsApi.getById(pluginId);
       setPlugin(data);
@@ -40,7 +40,7 @@ export default function ClientPluginDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pluginId]);
 
   useEffect(() => {
     if (!pluginId) {
@@ -48,7 +48,7 @@ export default function ClientPluginDetailPage() {
       return;
     }
     void loadPlugin();
-  }, [pluginId]);
+  }, [loadPlugin, pluginId]);
 
   const handleToggle = async (action: 'activate' | 'deactivate') => {
     try {

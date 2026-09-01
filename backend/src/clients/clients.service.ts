@@ -1,15 +1,19 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
-import { ClientStatus } from '@prisma/client';
+import { ClientStatus, UserRole } from '@prisma/client';
 
 @Injectable()
 export class ClientsService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(currentUserId: string, currentUserRole: string) {
-    if (currentUserRole === 'ADMIN') {
+  async findAll(currentUserId: string, currentUserRole: UserRole) {
+    if (currentUserRole === UserRole.ADMIN) {
       return this.prisma.client.findMany({
         include: {
           user: {
@@ -42,7 +46,7 @@ export class ClientsService {
     }
   }
 
-  async findOne(id: string, currentUserId: string, currentUserRole: string) {
+  async findOne(id: string, currentUserId: string, currentUserRole: UserRole) {
     const client = await this.prisma.client.findUnique({
       where: { id },
       include: {
@@ -62,15 +66,23 @@ export class ClientsService {
       throw new NotFoundException('Client not found');
     }
 
-    if (currentUserRole !== 'ADMIN' && client.userId !== currentUserId) {
+    if (currentUserRole !== UserRole.ADMIN && client.userId !== currentUserId) {
       throw new ForbiddenException('Access denied');
     }
 
     return client;
   }
 
-  async create(createClientDto: CreateClientDto, currentUserId: string, currentUserRole: string) {
-    if (currentUserRole !== 'ADMIN' && createClientDto.userId && createClientDto.userId !== currentUserId) {
+  async create(
+    createClientDto: CreateClientDto,
+    currentUserId: string,
+    currentUserRole: UserRole,
+  ) {
+    if (
+      currentUserRole !== UserRole.ADMIN &&
+      createClientDto.userId &&
+      createClientDto.userId !== currentUserId
+    ) {
       throw new ForbiddenException('You can only create a client for yourself');
     }
 
@@ -105,7 +117,12 @@ export class ClientsService {
     });
   }
 
-  async update(id: string, updateClientDto: UpdateClientDto, currentUserId: string, currentUserRole: string) {
+  async update(
+    id: string,
+    updateClientDto: UpdateClientDto,
+    currentUserId: string,
+    currentUserRole: UserRole,
+  ) {
     const client = await this.prisma.client.findUnique({
       where: { id },
     });
@@ -114,12 +131,12 @@ export class ClientsService {
       throw new NotFoundException('Client not found');
     }
 
-    if (currentUserRole !== 'ADMIN' && client.userId !== currentUserId) {
+    if (currentUserRole !== UserRole.ADMIN && client.userId !== currentUserId) {
       throw new ForbiddenException('Access denied');
     }
 
     // Only admins can change status
-    if (updateClientDto.status && currentUserRole !== 'ADMIN') {
+    if (updateClientDto.status && currentUserRole !== UserRole.ADMIN) {
       throw new ForbiddenException('Only admins can change client status');
     }
 
@@ -140,40 +157,64 @@ export class ClientsService {
     });
   }
 
-  async block(id: string, currentUserId: string, currentUserRole: string) {
-    if (currentUserRole !== 'ADMIN') {
+  async block(id: string, currentUserId: string, currentUserRole: UserRole) {
+    if (currentUserRole !== UserRole.ADMIN) {
       throw new ForbiddenException('Only admins can block clients');
     }
 
-    return this.update(id, { status: ClientStatus.BLOCKED }, currentUserId, currentUserRole);
+    return this.update(
+      id,
+      { status: ClientStatus.BLOCKED },
+      currentUserId,
+      currentUserRole,
+    );
   }
 
-  async unblock(id: string, currentUserId: string, currentUserRole: string) {
-    if (currentUserRole !== 'ADMIN') {
+  async unblock(id: string, currentUserId: string, currentUserRole: UserRole) {
+    if (currentUserRole !== UserRole.ADMIN) {
       throw new ForbiddenException('Only admins can unblock clients');
     }
 
-    return this.update(id, { status: ClientStatus.ACTIVE }, currentUserId, currentUserRole);
+    return this.update(
+      id,
+      { status: ClientStatus.ACTIVE },
+      currentUserId,
+      currentUserRole,
+    );
   }
 
-  async suspend(id: string, currentUserId: string, currentUserRole: string) {
-    if (currentUserRole !== 'ADMIN') {
+  async suspend(id: string, currentUserId: string, currentUserRole: UserRole) {
+    if (currentUserRole !== UserRole.ADMIN) {
       throw new ForbiddenException('Only admins can suspend clients');
     }
 
-    return this.update(id, { status: ClientStatus.SUSPENDED }, currentUserId, currentUserRole);
+    return this.update(
+      id,
+      { status: ClientStatus.SUSPENDED },
+      currentUserId,
+      currentUserRole,
+    );
   }
 
-  async unsuspend(id: string, currentUserId: string, currentUserRole: string) {
-    if (currentUserRole !== 'ADMIN') {
+  async unsuspend(
+    id: string,
+    currentUserId: string,
+    currentUserRole: UserRole,
+  ) {
+    if (currentUserRole !== UserRole.ADMIN) {
       throw new ForbiddenException('Only admins can unsuspend clients');
     }
 
-    return this.update(id, { status: ClientStatus.ACTIVE }, currentUserId, currentUserRole);
+    return this.update(
+      id,
+      { status: ClientStatus.ACTIVE },
+      currentUserId,
+      currentUserRole,
+    );
   }
 
-  async delete(id: string, currentUserId: string, currentUserRole: string) {
-    if (currentUserRole !== 'ADMIN') {
+  async delete(id: string, currentUserId: string, currentUserRole: UserRole) {
+    if (currentUserRole !== UserRole.ADMIN) {
       throw new ForbiddenException('Only admins can delete clients');
     }
 
@@ -192,6 +233,131 @@ export class ClientsService {
 
     return {
       message: 'Client deleted successfully',
+    };
+  }
+
+  // Template management methods
+  async getClientTemplates(clientId: string) {
+    const client = await this.prisma.client.findUnique({
+      where: { id: clientId },
+    });
+
+    if (!client) {
+      throw new NotFoundException('Client not found');
+    }
+
+    return this.prisma.clientTemplate.findMany({
+      where: { clientId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async assignTemplate(
+    clientId: string,
+    templateId: string,
+    customName?: string,
+  ) {
+    const client = await this.prisma.client.findUnique({
+      where: { id: clientId },
+    });
+
+    if (!client) {
+      throw new NotFoundException('Client not found');
+    }
+
+    // Check if template is already assigned
+    const existing = await this.prisma.clientTemplate.findUnique({
+      where: {
+        clientId_templateId: {
+          clientId,
+          templateId,
+        },
+      },
+    });
+
+    if (existing) {
+      // Reactivate if it exists but is inactive
+      if (!existing.isActive) {
+        return this.prisma.clientTemplate.update({
+          where: {
+            clientId_templateId: {
+              clientId,
+              templateId,
+            },
+          },
+          data: {
+            isActive: true,
+            customName: customName || existing.customName,
+          },
+        });
+      }
+      throw new ForbiddenException('Template already assigned to this client');
+    }
+
+    return this.prisma.clientTemplate.create({
+      data: {
+        clientId,
+        templateId,
+        customName,
+        isActive: true,
+      },
+    });
+  }
+
+  async updateClientTemplate(
+    clientId: string,
+    templateId: string,
+    updates: { customName?: string; isActive?: boolean },
+  ) {
+    const clientTemplate = await this.prisma.clientTemplate.findUnique({
+      where: {
+        clientId_templateId: {
+          clientId,
+          templateId,
+        },
+      },
+    });
+
+    if (!clientTemplate) {
+      throw new NotFoundException('Template assignment not found');
+    }
+
+    return this.prisma.clientTemplate.update({
+      where: {
+        clientId_templateId: {
+          clientId,
+          templateId,
+        },
+      },
+      data: updates,
+    });
+  }
+
+  async removeTemplate(clientId: string, templateId: string) {
+    const clientTemplate = await this.prisma.clientTemplate.findUnique({
+      where: {
+        clientId_templateId: {
+          clientId,
+          templateId,
+        },
+      },
+    });
+
+    if (!clientTemplate) {
+      throw new NotFoundException('Template assignment not found');
+    }
+
+    await this.prisma.clientTemplate.delete({
+      where: {
+        clientId_templateId: {
+          clientId,
+          templateId,
+        },
+      },
+    });
+
+    return {
+      message: 'Template removed successfully',
     };
   }
 }

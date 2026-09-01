@@ -1,4 +1,9 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Request } from 'express';
 import * as crypto from 'crypto';
 
@@ -11,15 +16,19 @@ export class HmacAuthGuard implements CanActivate {
     const apiKey = request.headers['x-api-key'] as string;
 
     if (!signature || !timestamp || !apiKey) {
-      throw new UnauthorizedException('Missing required authentication headers');
+      throw new UnauthorizedException(
+        'Missing required authentication headers',
+      );
     }
 
     // Check timestamp to prevent replay attacks (5 minutes tolerance)
     const currentTime = Math.floor(Date.now() / 1000);
     const requestTime = parseInt(timestamp, 10);
-    
+
     if (Math.abs(currentTime - requestTime) > 300) {
-      throw new UnauthorizedException('Request timestamp is too old or in the future');
+      throw new UnauthorizedException(
+        'Request timestamp is too old or in the future',
+      );
     }
 
     // Get the API secret from environment or database
@@ -46,7 +55,12 @@ export class HmacAuthGuard implements CanActivate {
       .digest('hex');
 
     // Use constant-time comparison to prevent timing attacks
-    if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
+    if (
+      !crypto.timingSafeEqual(
+        Buffer.from(signature),
+        Buffer.from(expectedSignature),
+      )
+    ) {
       throw new UnauthorizedException('Invalid signature');
     }
 

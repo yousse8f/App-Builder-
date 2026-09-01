@@ -5,6 +5,7 @@ import { ExpressAdapter } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import type { Request, Response } from 'express';
 
 const expressApp = express();
 let isInitialized = false;
@@ -34,7 +35,10 @@ async function bootstrap() {
     return;
   }
 
-  const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp));
+  const app = await NestFactory.create(
+    AppModule,
+    new ExpressAdapter(expressApp),
+  );
 
   app.enableCors({
     origin: (origin, callback) => {
@@ -43,7 +47,7 @@ async function bootstrap() {
         return;
       }
 
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error('Not allowed by CORS'), false);
     },
     credentials: true,
   });
@@ -74,7 +78,7 @@ async function bootstrap() {
   isInitialized = true;
 }
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req: Request, res: Response) {
   await bootstrap();
-  return expressApp(req, res);
+  return expressApp(req, res) as never;
 }

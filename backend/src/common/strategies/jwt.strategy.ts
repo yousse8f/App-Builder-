@@ -13,11 +13,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_ACCESS_SECRET') || 'default-secret',
+      secretOrKey:
+        configService.get<string>('JWT_ACCESS_SECRET') || 'default-secret',
     });
   }
 
-  async validate(payload: any) {
+  async validate(payload: { sub: string; email: string; role: string }) {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
       include: { client: true },
@@ -31,12 +32,24 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('User account is not active');
     }
 
+    // For CLIENT role, ensure they have an active client
+    if (user.role === 'CLIENT') {
+      if (!user.client) {
+        throw new UnauthorizedException(
+          'Client profile not found. Please contact support.',
+        );
+      }
+      if (user.client.status !== 'ACTIVE') {
+        throw new UnauthorizedException('Client account is not active');
+      }
+    }
+
     return {
       id: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
-      clientId: user.client?.id,
+      client: user.client,
     };
   }
 }

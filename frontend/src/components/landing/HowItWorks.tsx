@@ -1,6 +1,6 @@
 'use client';
 
-import { UserPlus, LayoutTemplate, Settings, Rocket } from 'lucide-react';
+import { UserPlus, Smartphone, LayoutTemplate, Settings, Rocket } from 'lucide-react';
 import { useLanguage } from '@/lib/i18n/language-context';
 
 export default function HowItWorks() {
@@ -15,7 +15,7 @@ export default function HowItWorks() {
     },
     {
       number: '02',
-      icon: LayoutTemplate,
+      icon: Smartphone,
       title: t.howItWorks.steps[1].title,
       description: t.howItWorks.steps[1].description,
     },

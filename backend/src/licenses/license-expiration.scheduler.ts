@@ -15,7 +15,7 @@ export class LicenseExpirationScheduler {
 
     try {
       const now = new Date();
-      
+
       // Find all active licenses that have expired
       const expiredLicenses = await this.prisma.license.findMany({
         where: {
@@ -31,13 +31,15 @@ export class LicenseExpirationScheduler {
         return;
       }
 
-      this.logger.log(`Found ${expiredLicenses.length} expired licenses. Updating status...`);
+      this.logger.log(
+        `Found ${expiredLicenses.length} expired licenses. Updating status...`,
+      );
 
       // Update all expired licenses to EXPIRED status
       const updatedLicenses = await this.prisma.license.updateMany({
         where: {
           id: {
-            in: expiredLicenses.map(license => license.id),
+            in: expiredLicenses.map((license) => license.id),
           },
         },
         data: {
@@ -45,7 +47,9 @@ export class LicenseExpirationScheduler {
         },
       });
 
-      this.logger.log(`Successfully updated ${updatedLicenses.count} licenses to EXPIRED status.`);
+      this.logger.log(
+        `Successfully updated ${updatedLicenses.count} licenses to EXPIRED status.`,
+      );
 
       // Log expiration for each license
       for (const license of expiredLicenses) {
@@ -58,7 +62,6 @@ export class LicenseExpirationScheduler {
           },
         });
       }
-
     } catch (error) {
       this.logger.error('Error during license expiration check:', error);
     }
@@ -69,15 +72,23 @@ export class LicenseExpirationScheduler {
     this.logger.log('Generating daily license report...');
 
     try {
-      const now = new Date();
-      
       const stats = {
         total: await this.prisma.license.count(),
-        active: await this.prisma.license.count({ where: { status: LicenseStatus.ACTIVE } }),
-        expired: await this.prisma.license.count({ where: { status: LicenseStatus.EXPIRED } }),
-        suspended: await this.prisma.license.count({ where: { status: LicenseStatus.SUSPENDED } }),
-        blocked: await this.prisma.license.count({ where: { status: LicenseStatus.BLOCKED } }),
-        inactive: await this.prisma.license.count({ where: { status: LicenseStatus.INACTIVE } }),
+        active: await this.prisma.license.count({
+          where: { status: LicenseStatus.ACTIVE },
+        }),
+        expired: await this.prisma.license.count({
+          where: { status: LicenseStatus.EXPIRED },
+        }),
+        suspended: await this.prisma.license.count({
+          where: { status: LicenseStatus.SUSPENDED },
+        }),
+        blocked: await this.prisma.license.count({
+          where: { status: LicenseStatus.BLOCKED },
+        }),
+        inactive: await this.prisma.license.count({
+          where: { status: LicenseStatus.INACTIVE },
+        }),
       };
 
       this.logger.log(`Daily License Report: ${JSON.stringify(stats)}`);

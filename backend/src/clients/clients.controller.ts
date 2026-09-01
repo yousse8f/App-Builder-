@@ -1,5 +1,19 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
@@ -19,7 +33,10 @@ export class ClientsController {
   @Get()
   @ApiOperation({ summary: 'Get all clients' })
   @ApiResponse({ status: 200, description: 'List of clients' })
-  async findAll(@CurrentUser('id') userId: string, @CurrentUser('role') userRole: string) {
+  async findAll(
+    @CurrentUser('id') userId: string,
+    @CurrentUser('role') userRole: UserRole,
+  ) {
     return this.clientsService.findAll(userId, userRole);
   }
 
@@ -30,7 +47,7 @@ export class ClientsController {
   async findOne(
     @Param('id') id: string,
     @CurrentUser('id') userId: string,
-    @CurrentUser('role') userRole: string,
+    @CurrentUser('role') userRole: UserRole,
   ) {
     return this.clientsService.findOne(id, userId, userRole);
   }
@@ -42,7 +59,7 @@ export class ClientsController {
   async create(
     @Body() createClientDto: CreateClientDto,
     @CurrentUser('id') userId: string,
-    @CurrentUser('role') userRole: string,
+    @CurrentUser('role') userRole: UserRole,
   ) {
     return this.clientsService.create(createClientDto, userId, userRole);
   }
@@ -55,7 +72,7 @@ export class ClientsController {
     @Param('id') id: string,
     @Body() updateClientDto: UpdateClientDto,
     @CurrentUser('id') userId: string,
-    @CurrentUser('role') userRole: string,
+    @CurrentUser('role') userRole: UserRole,
   ) {
     return this.clientsService.update(id, updateClientDto, userId, userRole);
   }
@@ -68,7 +85,7 @@ export class ClientsController {
   async block(
     @Param('id') id: string,
     @CurrentUser('id') userId: string,
-    @CurrentUser('role') userRole: string,
+    @CurrentUser('role') userRole: UserRole,
   ) {
     return this.clientsService.block(id, userId, userRole);
   }
@@ -81,7 +98,7 @@ export class ClientsController {
   async unblock(
     @Param('id') id: string,
     @CurrentUser('id') userId: string,
-    @CurrentUser('role') userRole: string,
+    @CurrentUser('role') userRole: UserRole,
   ) {
     return this.clientsService.unblock(id, userId, userRole);
   }
@@ -94,7 +111,7 @@ export class ClientsController {
   async suspend(
     @Param('id') id: string,
     @CurrentUser('id') userId: string,
-    @CurrentUser('role') userRole: string,
+    @CurrentUser('role') userRole: UserRole,
   ) {
     return this.clientsService.suspend(id, userId, userRole);
   }
@@ -107,7 +124,7 @@ export class ClientsController {
   async unsuspend(
     @Param('id') id: string,
     @CurrentUser('id') userId: string,
-    @CurrentUser('role') userRole: string,
+    @CurrentUser('role') userRole: UserRole,
   ) {
     return this.clientsService.unsuspend(id, userId, userRole);
   }
@@ -120,8 +137,55 @@ export class ClientsController {
   async delete(
     @Param('id') id: string,
     @CurrentUser('id') userId: string,
-    @CurrentUser('role') userRole: string,
+    @CurrentUser('role') userRole: UserRole,
   ) {
     return this.clientsService.delete(id, userId, userRole);
+  }
+
+  // Template management endpoints (Admin only)
+  @Get(':id/templates')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Get client templates (Admin only)' })
+  @ApiResponse({ status: 200, description: 'List of client templates' })
+  async getClientTemplates(@Param('id') clientId: string) {
+    return this.clientsService.getClientTemplates(clientId);
+  }
+
+  @Post(':id/templates')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Assign template to client (Admin only)' })
+  @ApiResponse({ status: 201, description: 'Template successfully assigned' })
+  async assignTemplate(
+    @Param('id') clientId: string,
+    @Body() body: { templateId: string; customName?: string },
+  ) {
+    return this.clientsService.assignTemplate(
+      clientId,
+      body.templateId,
+      body.customName,
+    );
+  }
+
+  @Patch(':id/templates/:templateId')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Update client template (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Template successfully updated' })
+  async updateClientTemplate(
+    @Param('id') clientId: string,
+    @Param('templateId') templateId: string,
+    @Body() body: { customName?: string; isActive?: boolean },
+  ) {
+    return this.clientsService.updateClientTemplate(clientId, templateId, body);
+  }
+
+  @Delete(':id/templates/:templateId')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Remove template from client (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Template successfully removed' })
+  async removeTemplate(
+    @Param('id') clientId: string,
+    @Param('templateId') templateId: string,
+  ) {
+    return this.clientsService.removeTemplate(clientId, templateId);
   }
 }

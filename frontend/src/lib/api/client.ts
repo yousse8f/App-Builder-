@@ -43,9 +43,14 @@ api.interceptors.response.use(
           const { accessToken, refreshToken: newRefreshToken, user } = response.data;
           localStorage.setItem('accessToken', accessToken);
           localStorage.setItem('refreshToken', newRefreshToken);
+          localStorage.setItem('token', accessToken); // For backward compatibility
 
           // Update user in auth context if available
           if (user && typeof window !== 'undefined') {
+            // Store clientId for template filtering
+            if (user.client?.id) {
+              localStorage.setItem('clientId', user.client.id);
+            }
             window.dispatchEvent(new CustomEvent('auth:user-updated', { detail: user }));
           }
 
@@ -55,11 +60,27 @@ api.interceptors.response.use(
       } catch (refreshError) {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
+        localStorage.removeItem('token');
+        localStorage.removeItem('clientId');
         if (typeof window !== 'undefined') {
           // eslint-disable-next-line @next/next/no-location-assign-relative-destination
           window.location.href = '/login';
         }
         return Promise.reject(refreshError);
+      }
+    }
+
+    // Handle 400 errors for missing client profile
+    if (error.response?.status === 400) {
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Bad request';
+      if (errorMessage.includes('Client not found') || errorMessage.includes('client profile')) {
+        console.error('Client profile error:', errorMessage);
+        // You could redirect to a profile setup page here
+        if (typeof window !== 'undefined') {
+          // Show user-friendly message
+          error.clientProfileError = true;
+          error.userMessage = 'Your account needs a client profile. Please contact support or complete your registration.';
+        }
       }
     }
 

@@ -41,12 +41,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (token) {
           const response = await authApi.me();
           if (isMounted) {
-            setUser(normalizeUser(response.data));
+            const normalizedUser = normalizeUser(response.data);
+            setUser(normalizedUser);
+            // Store clientId for template filtering
+            if (normalizedUser?.client?.id) {
+              localStorage.setItem('clientId', normalizedUser.client.id);
+            }
+            // Also store token for backward compatibility
+            localStorage.setItem('token', token);
           }
         }
       } catch {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
+        localStorage.removeItem('token');
+        localStorage.removeItem('clientId');
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -83,6 +92,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
+    localStorage.setItem('token', accessToken); // For backward compatibility
+    // Store clientId for template filtering
+    if (nextUser.client?.id) {
+      localStorage.setItem('clientId', nextUser.client.id);
+    }
     syncUserState(nextUser);
 
     return response.data;
@@ -94,6 +108,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
+    localStorage.setItem('token', accessToken); // For backward compatibility
+    // Store clientId for template filtering
+    if (nextUser.client?.id) {
+      localStorage.setItem('clientId', nextUser.client.id);
+    }
     syncUserState(nextUser);
 
     return response.data;
@@ -107,6 +126,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
+      localStorage.removeItem('token');
+      localStorage.removeItem('clientId');
       syncUserState(null);
     }
   };

@@ -1,0 +1,21 @@
+{
+  "name": "appshot-studio",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Screenshots Android / iOS — Generate professional app screenshots for App Store and Google Play",
+  "license": "MIT",
+  "bin": {
+    "appshot": "./src/cli/index.js"
+  },
+  "scripts": {
+    "editor": "node src/cli/index.js editor",
+    "render": "node src/cli/index.js render",
+    "start": "node start-server.js"
+  },
+  "dependencies": {
+    "axios": "^1.20.0",
+    "form-data": "^4.0.6",
+    "playwright-core": "^1.49.0"
+  },
+  "private": true
+}

@@ -4,18 +4,18 @@ import { ReactNode, useState } from 'react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
-import { 
-  LayoutDashboard, 
-  FolderKanban, 
-  LayoutTemplate, 
-  Key, 
-  Hammer, 
+import {
+  LayoutDashboard,
+  FolderKanban,
+  Key,
+  Hammer,
   Puzzle,
-  User, 
-  LogOut, 
-  Menu, 
+  User,
+  LogOut,
+  Menu,
   X,
-  ChevronRight 
+  ChevronRight,
+  Layout
 } from 'lucide-react';
 import Link from 'next/link';
 import { useLanguage } from '@/lib/i18n/language-context';
@@ -41,7 +41,7 @@ export default function ClientLayout({ children }: { children: ReactNode }) {
   const navigation = [
     { name: t.dashboard.dashboardLabel, href: '/dashboard', icon: LayoutDashboard },
     { name: t.dashboard.myProjects, href: '/dashboard/projects', icon: FolderKanban },
-    { name: t.dashboard.templates, href: '/dashboard/templates', icon: LayoutTemplate },
+    { name: 'Templates', href: '/dashboard/templates', icon: Layout },
     { name: t.dashboard.licenses, href: '/dashboard/licenses', icon: Key },
     { name: 'Plugins', href: '/dashboard/plugins', icon: Puzzle },
     { name: t.dashboard.builds, href: '/dashboard/builds', icon: Hammer },

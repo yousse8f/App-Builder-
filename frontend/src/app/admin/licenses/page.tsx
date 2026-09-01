@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Key, Plus } from 'lucide-react';
 import PageHeader from '@/components/shared/ui/PageHeader';
@@ -29,7 +29,7 @@ export default function AdminLicenses() {
     activationLimit: 1,
   });
 
-  const fetchLicenses = async () => {
+  const fetchLicenses = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3001/api/v1/licenses', {
@@ -43,12 +43,10 @@ export default function AdminLicenses() {
       }
     } catch (error) {
       console.error('Error fetching licenses:', error);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3001/api/v1/clients', {
@@ -63,14 +61,13 @@ export default function AdminLicenses() {
     } catch (error) {
       console.error('Error fetching clients:', error);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoading(true);
     void fetchLicenses();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchClients();
-  }, []);
+  }, [fetchLicenses, fetchClients]);
 
   const handleCreateLicense = async (e: React.FormEvent) => {
     e.preventDefault();

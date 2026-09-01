@@ -1,13 +1,26 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { LicenseType, LicenseStatus, ActivationStatus, LicenseLogAction } from '@prisma/client';
-import { generateLicenseKey, validateLicenseKeyFormat, getLicenseTypeFromKey } from './license-key-generator.util';
+import {
+  LicenseStatus,
+  ActivationStatus,
+  LicenseLogAction,
+} from '@prisma/client';
+import { generateLicenseKey } from './license-key-generator.util';
 import { CreateLicenseDto } from './dto/create-license.dto';
 import { ValidateLicenseDto } from './dto/validate-license.dto';
 import { ActivateLicenseDto } from './dto/activate-license.dto';
 import { DeactivateLicenseDto } from './dto/deactivate-license.dto';
 import { UpdateLicenseStatusDto } from './dto/update-license-status.dto';
-import { LicenseValidationResponseDto, LicenseActivationResponseDto, LicenseErrorCodes } from './dto/license-response.dto';
+import {
+  LicenseValidationResponseDto,
+  LicenseActivationResponseDto,
+  LicenseErrorCodes,
+} from './dto/license-response.dto';
 
 @Injectable()
 export class LicensesService {
@@ -36,7 +49,9 @@ export class LicensesService {
     });
 
     if (existingLicense) {
-      throw new ConflictException(`Client already has an active ${dto.type} license`);
+      throw new ConflictException(
+        `Client already has an active ${dto.type} license`,
+      );
     }
 
     const licenseKey = generateLicenseKey(dto.type);
@@ -52,12 +67,21 @@ export class LicensesService {
       },
     });
 
-    await this.logLicenseAction(license.id, LicenseLogAction.CREATE, null, ipAddress || null, 'SUCCESS');
+    await this.logLicenseAction(
+      license.id,
+      LicenseLogAction.CREATE,
+      null,
+      ipAddress || null,
+      'SUCCESS',
+    );
 
     return license;
   }
 
-  async validateLicense(dto: ValidateLicenseDto, ipAddress?: string | null): Promise<LicenseValidationResponseDto> {
+  async validateLicense(
+    dto: ValidateLicenseDto,
+    ipAddress?: string | null,
+  ): Promise<LicenseValidationResponseDto> {
     const license = await this.prisma.license.findUnique({
       where: { key: dto.licenseKey },
       include: {
@@ -79,7 +103,13 @@ export class LicensesService {
     }
 
     if (license.type !== dto.type) {
-      await this.logLicenseAction(license.id, LicenseLogAction.VALIDATE, dto.domain, ipAddress || null, LicenseErrorCodes.INVALID_LICENSE_TYPE);
+      await this.logLicenseAction(
+        license.id,
+        LicenseLogAction.VALIDATE,
+        dto.domain,
+        ipAddress || null,
+        LicenseErrorCodes.INVALID_LICENSE_TYPE,
+      );
       return {
         valid: false,
         errorCode: LicenseErrorCodes.INVALID_LICENSE_TYPE,
@@ -88,7 +118,13 @@ export class LicensesService {
     }
 
     if (license.client.status !== 'ACTIVE') {
-      await this.logLicenseAction(license.id, LicenseLogAction.VALIDATE, dto.domain, ipAddress || null, LicenseErrorCodes.CLIENT_BLOCKED);
+      await this.logLicenseAction(
+        license.id,
+        LicenseLogAction.VALIDATE,
+        dto.domain,
+        ipAddress || null,
+        LicenseErrorCodes.CLIENT_BLOCKED,
+      );
       return {
         valid: false,
         errorCode: LicenseErrorCodes.CLIENT_BLOCKED,
@@ -97,7 +133,13 @@ export class LicensesService {
     }
 
     if (license.status === LicenseStatus.BLOCKED) {
-      await this.logLicenseAction(license.id, LicenseLogAction.VALIDATE, dto.domain, ipAddress || null, LicenseErrorCodes.LICENSE_BLOCKED);
+      await this.logLicenseAction(
+        license.id,
+        LicenseLogAction.VALIDATE,
+        dto.domain,
+        ipAddress || null,
+        LicenseErrorCodes.LICENSE_BLOCKED,
+      );
       return {
         valid: false,
         errorCode: LicenseErrorCodes.LICENSE_BLOCKED,
@@ -106,7 +148,13 @@ export class LicensesService {
     }
 
     if (license.status === LicenseStatus.SUSPENDED) {
-      await this.logLicenseAction(license.id, LicenseLogAction.VALIDATE, dto.domain, ipAddress || null, LicenseErrorCodes.LICENSE_SUSPENDED);
+      await this.logLicenseAction(
+        license.id,
+        LicenseLogAction.VALIDATE,
+        dto.domain,
+        ipAddress || null,
+        LicenseErrorCodes.LICENSE_SUSPENDED,
+      );
       return {
         valid: false,
         errorCode: LicenseErrorCodes.LICENSE_SUSPENDED,
@@ -119,7 +167,13 @@ export class LicensesService {
         where: { id: license.id },
         data: { status: LicenseStatus.EXPIRED },
       });
-      await this.logLicenseAction(license.id, LicenseLogAction.VALIDATE, dto.domain, ipAddress || null, LicenseErrorCodes.LICENSE_EXPIRED);
+      await this.logLicenseAction(
+        license.id,
+        LicenseLogAction.VALIDATE,
+        dto.domain,
+        ipAddress || null,
+        LicenseErrorCodes.LICENSE_EXPIRED,
+      );
       return {
         valid: false,
         errorCode: LicenseErrorCodes.LICENSE_EXPIRED,
@@ -128,7 +182,13 @@ export class LicensesService {
     }
 
     if (license.status === LicenseStatus.EXPIRED) {
-      await this.logLicenseAction(license.id, LicenseLogAction.VALIDATE, dto.domain, ipAddress || null, LicenseErrorCodes.LICENSE_EXPIRED);
+      await this.logLicenseAction(
+        license.id,
+        LicenseLogAction.VALIDATE,
+        dto.domain,
+        ipAddress || null,
+        LicenseErrorCodes.LICENSE_EXPIRED,
+      );
       return {
         valid: false,
         errorCode: LicenseErrorCodes.LICENSE_EXPIRED,
@@ -137,7 +197,13 @@ export class LicensesService {
     }
 
     if (license.status !== LicenseStatus.ACTIVE) {
-      await this.logLicenseAction(license.id, LicenseLogAction.VALIDATE, dto.domain, ipAddress || null, LicenseErrorCodes.LICENSE_INACTIVE);
+      await this.logLicenseAction(
+        license.id,
+        LicenseLogAction.VALIDATE,
+        dto.domain,
+        ipAddress || null,
+        LicenseErrorCodes.LICENSE_INACTIVE,
+      );
       return {
         valid: false,
         errorCode: LicenseErrorCodes.LICENSE_INACTIVE,
@@ -145,9 +211,17 @@ export class LicensesService {
       };
     }
 
-    const domainActivation = license.activations.find(a => a.domain === dto.domain);
+    const domainActivation = license.activations.find(
+      (a) => a.domain === dto.domain,
+    );
     if (!domainActivation) {
-      await this.logLicenseAction(license.id, LicenseLogAction.VALIDATE, dto.domain, ipAddress || null, LicenseErrorCodes.INVALID_DOMAIN);
+      await this.logLicenseAction(
+        license.id,
+        LicenseLogAction.VALIDATE,
+        dto.domain,
+        ipAddress || null,
+        LicenseErrorCodes.INVALID_DOMAIN,
+      );
       return {
         valid: false,
         errorCode: LicenseErrorCodes.INVALID_DOMAIN,
@@ -160,7 +234,13 @@ export class LicensesService {
       data: { lastValidatedAt: new Date() },
     });
 
-    await this.logLicenseAction(license.id, LicenseLogAction.VALIDATE, dto.domain, ipAddress || null, 'SUCCESS');
+    await this.logLicenseAction(
+      license.id,
+      LicenseLogAction.VALIDATE,
+      dto.domain,
+      ipAddress || null,
+      'SUCCESS',
+    );
 
     return {
       valid: true,
@@ -170,7 +250,10 @@ export class LicensesService {
     };
   }
 
-  async activateLicense(dto: ActivateLicenseDto, ipAddress?: string | null): Promise<LicenseActivationResponseDto> {
+  async activateLicense(
+    dto: ActivateLicenseDto,
+    ipAddress?: string | null,
+  ): Promise<LicenseActivationResponseDto> {
     const license = await this.prisma.license.findUnique({
       where: { key: dto.licenseKey },
       include: {
@@ -193,7 +276,13 @@ export class LicensesService {
     }
 
     if (license.type !== dto.type) {
-      await this.logLicenseAction(license.id, LicenseLogAction.ACTIVATE, dto.domain, ipAddress || null, LicenseErrorCodes.INVALID_LICENSE_TYPE);
+      await this.logLicenseAction(
+        license.id,
+        LicenseLogAction.ACTIVATE,
+        dto.domain,
+        ipAddress || null,
+        LicenseErrorCodes.INVALID_LICENSE_TYPE,
+      );
       return {
         success: false,
         message: 'Invalid license type',
@@ -203,7 +292,13 @@ export class LicensesService {
     }
 
     if (license.client.status !== 'ACTIVE') {
-      await this.logLicenseAction(license.id, LicenseLogAction.ACTIVATE, dto.domain, ipAddress || null, LicenseErrorCodes.CLIENT_BLOCKED);
+      await this.logLicenseAction(
+        license.id,
+        LicenseLogAction.ACTIVATE,
+        dto.domain,
+        ipAddress || null,
+        LicenseErrorCodes.CLIENT_BLOCKED,
+      );
       return {
         success: false,
         message: 'Client is blocked or suspended',
@@ -213,7 +308,13 @@ export class LicensesService {
     }
 
     if (license.status !== LicenseStatus.ACTIVE) {
-      await this.logLicenseAction(license.id, LicenseLogAction.ACTIVATE, dto.domain, ipAddress || null, LicenseErrorCodes.LICENSE_NOT_ACTIVE);
+      await this.logLicenseAction(
+        license.id,
+        LicenseLogAction.ACTIVATE,
+        dto.domain,
+        ipAddress || null,
+        LicenseErrorCodes.LICENSE_NOT_ACTIVE,
+      );
       return {
         success: false,
         message: 'License is not active',
@@ -227,7 +328,13 @@ export class LicensesService {
         where: { id: license.id },
         data: { status: LicenseStatus.EXPIRED },
       });
-      await this.logLicenseAction(license.id, LicenseLogAction.ACTIVATE, dto.domain, ipAddress || null, LicenseErrorCodes.LICENSE_EXPIRED);
+      await this.logLicenseAction(
+        license.id,
+        LicenseLogAction.ACTIVATE,
+        dto.domain,
+        ipAddress || null,
+        LicenseErrorCodes.LICENSE_EXPIRED,
+      );
       return {
         success: false,
         message: 'License has expired',
@@ -236,9 +343,17 @@ export class LicensesService {
       };
     }
 
-    const existingActivation = license.activations.find(a => a.domain === dto.domain);
+    const existingActivation = license.activations.find(
+      (a) => a.domain === dto.domain,
+    );
     if (existingActivation) {
-      await this.logLicenseAction(license.id, LicenseLogAction.ACTIVATE, dto.domain, ipAddress || null, LicenseErrorCodes.DOMAIN_ALREADY_ACTIVATED);
+      await this.logLicenseAction(
+        license.id,
+        LicenseLogAction.ACTIVATE,
+        dto.domain,
+        ipAddress || null,
+        LicenseErrorCodes.DOMAIN_ALREADY_ACTIVATED,
+      );
       return {
         success: false,
         message: 'Domain is already activated for this license',
@@ -248,7 +363,13 @@ export class LicensesService {
     }
 
     if (license.activations.length >= license.activationLimit) {
-      await this.logLicenseAction(license.id, LicenseLogAction.ACTIVATE, dto.domain, ipAddress || null, LicenseErrorCodes.ACTIVATION_LIMIT_REACHED);
+      await this.logLicenseAction(
+        license.id,
+        LicenseLogAction.ACTIVATE,
+        dto.domain,
+        ipAddress || null,
+        LicenseErrorCodes.ACTIVATION_LIMIT_REACHED,
+      );
       return {
         success: false,
         message: 'Activation limit reached',
@@ -271,7 +392,13 @@ export class LicensesService {
       data: { activationCount: license.activationCount + 1 },
     });
 
-    await this.logLicenseAction(license.id, LicenseLogAction.ACTIVATE, dto.domain, ipAddress || null, 'SUCCESS');
+    await this.logLicenseAction(
+      license.id,
+      LicenseLogAction.ACTIVATE,
+      dto.domain,
+      ipAddress || null,
+      'SUCCESS',
+    );
 
     return {
       success: true,
@@ -284,12 +411,15 @@ export class LicensesService {
     };
   }
 
-  async deactivateLicense(dto: DeactivateLicenseDto, ipAddress?: string | null): Promise<LicenseActivationResponseDto> {
+  async deactivateLicense(
+    dto: DeactivateLicenseDto,
+    ipAddress?: string | null,
+  ): Promise<LicenseActivationResponseDto> {
     const license = await this.prisma.license.findUnique({
       where: { key: dto.licenseKey },
       include: {
         activations: {
-          where: { 
+          where: {
             domain: dto.domain,
             status: ActivationStatus.ACTIVE,
           },
@@ -308,7 +438,13 @@ export class LicensesService {
 
     const activation = license.activations[0];
     if (!activation) {
-      await this.logLicenseAction(license.id, LicenseLogAction.DEACTIVATE, dto.domain, ipAddress || null, LicenseErrorCodes.ACTIVATION_NOT_FOUND);
+      await this.logLicenseAction(
+        license.id,
+        LicenseLogAction.DEACTIVATE,
+        dto.domain,
+        ipAddress || null,
+        LicenseErrorCodes.ACTIVATION_NOT_FOUND,
+      );
       return {
         success: false,
         message: 'Activation not found for this domain',
@@ -327,7 +463,13 @@ export class LicensesService {
       data: { activationCount: Math.max(0, license.activationCount - 1) },
     });
 
-    await this.logLicenseAction(license.id, LicenseLogAction.DEACTIVATE, dto.domain, ipAddress || null, 'SUCCESS');
+    await this.logLicenseAction(
+      license.id,
+      LicenseLogAction.DEACTIVATE,
+      dto.domain,
+      ipAddress || null,
+      'SUCCESS',
+    );
 
     return {
       success: true,
@@ -335,7 +477,11 @@ export class LicensesService {
     };
   }
 
-  async updateLicenseStatus(licenseId: string, dto: UpdateLicenseStatusDto, ipAddress?: string | null) {
+  async updateLicenseStatus(
+    licenseId: string,
+    dto: UpdateLicenseStatusDto,
+    ipAddress?: string | null,
+  ) {
     const license = await this.prisma.license.findUnique({
       where: { id: licenseId },
     });
@@ -345,15 +491,25 @@ export class LicensesService {
     }
 
     const validTransitions: Record<LicenseStatus, LicenseStatus[]> = {
-      [LicenseStatus.ACTIVE]: [LicenseStatus.SUSPENDED, LicenseStatus.BLOCKED, LicenseStatus.INACTIVE],
-      [LicenseStatus.SUSPENDED]: [LicenseStatus.ACTIVE, LicenseStatus.BLOCKED, LicenseStatus.INACTIVE],
+      [LicenseStatus.ACTIVE]: [
+        LicenseStatus.SUSPENDED,
+        LicenseStatus.BLOCKED,
+        LicenseStatus.INACTIVE,
+      ],
+      [LicenseStatus.SUSPENDED]: [
+        LicenseStatus.ACTIVE,
+        LicenseStatus.BLOCKED,
+        LicenseStatus.INACTIVE,
+      ],
       [LicenseStatus.BLOCKED]: [LicenseStatus.ACTIVE, LicenseStatus.INACTIVE],
       [LicenseStatus.INACTIVE]: [LicenseStatus.ACTIVE],
       [LicenseStatus.EXPIRED]: [],
     };
 
     if (!validTransitions[license.status].includes(dto.status)) {
-      throw new BadRequestException(`Cannot transition from ${license.status} to ${dto.status}`);
+      throw new BadRequestException(
+        `Cannot transition from ${license.status} to ${dto.status}`,
+      );
     }
 
     let action: LicenseLogAction;
@@ -379,7 +535,13 @@ export class LicensesService {
       data: { status: dto.status },
     });
 
-    await this.logLicenseAction(licenseId, action, null, ipAddress || null, 'SUCCESS');
+    await this.logLicenseAction(
+      licenseId,
+      action,
+      null,
+      ipAddress || null,
+      'SUCCESS',
+    );
 
     return updatedLicense;
   }
@@ -402,7 +564,13 @@ export class LicensesService {
       data: { status: LicenseStatus.ACTIVE },
     });
 
-    await this.logLicenseAction(licenseId, LicenseLogAction.UNBLOCK, null, ipAddress || null, 'SUCCESS');
+    await this.logLicenseAction(
+      licenseId,
+      LicenseLogAction.UNBLOCK,
+      null,
+      ipAddress || null,
+      'SUCCESS',
+    );
 
     return updatedLicense;
   }

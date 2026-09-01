@@ -14,33 +14,27 @@ export default function Features() {
       status: t.features.available,
     },
     {
-      icon: LayoutTemplate,
+      icon: FolderKanban,
       title: t.features.items[1].title,
       description: t.features.items[1].description,
       status: t.features.available,
     },
     {
-      icon: FolderKanban,
+      icon: Hammer,
       title: t.features.items[2].title,
       description: t.features.items[2].description,
-      status: t.features.available,
+      status: t.features.comingSoon,
     },
     {
-      icon: Hammer,
+      icon: Key,
       title: t.features.items[3].title,
       description: t.features.items[3].description,
       status: t.features.comingSoon,
     },
     {
-      icon: Key,
+      icon: LayoutDashboard,
       title: t.features.items[4].title,
       description: t.features.items[4].description,
-      status: t.features.comingSoon,
-    },
-    {
-      icon: LayoutDashboard,
-      title: t.features.items[5].title,
-      description: t.features.items[5].description,
       status: t.features.available,
     },
   ];

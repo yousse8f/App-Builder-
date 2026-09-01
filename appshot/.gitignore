@@ -1,0 +1,6 @@
+node_modules/
+out/
+projects/*/.render-*.html
+.DS_Store
+.claude/launch.json
+projects/

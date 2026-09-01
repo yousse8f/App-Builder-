@@ -27,7 +27,6 @@ enum ClientStatus {
 
 enum LicenseType {
   PLUGIN
-  SCREEN_TEMPLATE
   BUILDER
 }
 
@@ -61,6 +60,34 @@ enum PluginStatus {
   ACTIVE
   INACTIVE
   DISABLED
+}
+
+
+
+enum Platform {
+  IOS
+  ANDROID
+  BOTH
+}
+
+enum DeviceType {
+  IPHONE
+  IPAD
+  ANDROID_PHONE
+  ANDROID_TABLET
+}
+
+enum BuildStatus {
+  PENDING
+  PREPARING
+  BUILDING
+  COMPLETED
+  FAILED
+}
+
+enum BuildPlatform {
+  ANDROID
+  IOS
 }
 
 model User {
@@ -105,6 +132,7 @@ model Client {
   projects    Project[]
   licenses    License[]
   plugins     Plugin[]
+  clientTemplates ClientTemplate[]
 
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
@@ -115,9 +143,27 @@ model Project {
   name        String
   description String?
   status      String   @default("active")
+  thumbnail   String?
+  thumbnailUrl String?
+
+  // Metadata
+  platform    Platform @default(BOTH)
+  deviceType  DeviceType?
+  orientation String?
+  width       Int?
+  height      Int?
+
+  // Screenshots integration
+  appshotProjectName String?   // Links to Screenshots project
+  appshotTemplateId String?    // Selected template ID
+  projectType        String  @default("standard") // "standard" or "screenshots"
 
   clientId    String
   client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  screens     ProjectScreen[]
+  assets      ProjectAsset[]
+  builds      Build[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -211,4 +257,74 @@ model PluginLog {
   details   String?
 
   createdAt DateTime @default(now())
+}
+
+
+
+// Extended Project functionality
+model ProjectScreen {
+  id          String   @id @default(cuid())
+  name        String
+  order       Int
+
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  config      Json     @default("{}")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ProjectAsset {
+  id          String   @id @default(cuid())
+  name        String
+  type        String
+  url         String
+  deviceId    String?
+  metadata    Json?
+
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+}
+
+// Build system
+model Build {
+  id          String        @id @default(cuid())
+  name        String
+  version     String?
+  status      BuildStatus   @default(PENDING)
+  platform    BuildPlatform
+  
+  // Build outputs
+  apkUrl      String?
+  ipaUrl      String?
+  logs        String?
+  
+  projectId   String
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+// Client-Template relation for AppShot template access control
+model ClientTemplate {
+  id          String   @id @default(cuid())
+  
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  templateId  String   // The template ID from AppShot (e.g., 'bold-gradient', 'clean-light')
+  
+  // Optional: custom name/description for this client
+  customName  String?
+  isActive    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([clientId, templateId])
 }

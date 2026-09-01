@@ -20,9 +20,11 @@ const isAllowedOrigin = (origin?: string) => {
     return true;
   }
 
-  return /^(https?:\/\/.*\.vercel\.app)(?::\d+)?$/i.test(origin) ||
+  return (
+    /^(https?:\/\/.*\.vercel\.app)(?::\d+)?$/i.test(origin) ||
     /^(https?:\/\/localhost)(?::\d+)?$/i.test(origin) ||
-    /^(https?:\/\/127\.0\.0\.1)(?::\d+)?$/i.test(origin);
+    /^(https?:\/\/127\.0\.0\.1)(?::\d+)?$/i.test(origin)
+  );
 };
 
 async function bootstrap() {
@@ -35,13 +37,13 @@ async function bootstrap() {
         return;
       }
 
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error('Not allowed by CORS'), false);
     },
     credentials: true,
   });
 
   app.setGlobalPrefix('api/v1');
-  
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -54,29 +56,38 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('App Builder API')
-    .setDescription('API documentation for App Builder application with complete licensing system')
+    .setDescription(
+      'API documentation for App Builder application with complete licensing system',
+    )
     .setVersion('1.0')
     .addBearerAuth()
     .addApiKey({ type: 'apiKey', name: 'x-api-key', in: 'header' }, 'API Key')
-    .addApiKey({ type: 'apiKey', name: 'x-timestamp', in: 'header' }, 'Timestamp')
-    .addApiKey({ type: 'apiKey', name: 'x-signature', in: 'header' }, 'Signature')
+    .addApiKey(
+      { type: 'apiKey', name: 'x-timestamp', in: 'header' },
+      'Timestamp',
+    )
+    .addApiKey(
+      { type: 'apiKey', name: 'x-signature', in: 'header' },
+      'Signature',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
-  
+
   // Ensure uploads directory exists for plugin uploads
   try {
-    const fs = require('fs');
-    const path = require('path');
+    const fs = await import('fs');
+    const path = await import('path');
     const uploadDir = path.join(process.cwd(), 'uploads', 'plugins');
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
-  } catch (e) {
+  } catch {
     // ignore directory creation failure
   }
 
   await app.listen(process.env.PORT ?? 3001);
 }
-bootstrap();
+
+void bootstrap();

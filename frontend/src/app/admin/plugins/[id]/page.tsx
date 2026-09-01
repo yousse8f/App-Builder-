@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState, useCallback } from 'react';
 import { pluginsApi } from '@/lib/api/client';
 
 type PluginDetail = {
@@ -28,12 +28,13 @@ type PluginDetail = {
 
 export default function AdminPluginDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const pluginId = params?.id ?? '';
   const [plugin, setPlugin] = useState<PluginDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const loadPlugin = async () => {
+  const loadPlugin = useCallback(async () => {
     try {
       const { data } = await pluginsApi.getById(pluginId);
       setPlugin(data);
@@ -43,7 +44,7 @@ export default function AdminPluginDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pluginId]);
 
   useEffect(() => {
     if (!pluginId) {
@@ -51,7 +52,7 @@ export default function AdminPluginDetailPage() {
       return;
     }
     void loadPlugin();
-  }, [pluginId]);
+  }, [pluginId, loadPlugin]);
 
   const handleToggle = async (action: 'activate' | 'deactivate') => {
     try {
@@ -75,7 +76,7 @@ export default function AdminPluginDetailPage() {
     try {
       const token = localStorage.getItem('accessToken');
       if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-    } catch (e) {
+    } catch {
       // ignore
     }
 
@@ -93,7 +94,7 @@ export default function AdminPluginDetailPage() {
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
           await loadPlugin();
-        } catch (e) {
+        } catch {
           setError('Upload succeeded but failed to refresh plugin data');
         }
       } else {
@@ -125,8 +126,8 @@ export default function AdminPluginDetailPage() {
       document.body.appendChild(link);
       link.click();
       link.remove();
-    } catch (e: any) {
-      setError(e?.message || 'Unable to download file');
+    } catch (e: unknown) {
+      setError((e as Error)?.message || 'Unable to download file');
     }
   };
 
@@ -150,7 +151,7 @@ export default function AdminPluginDetailPage() {
           <button onClick={() => handleToggle(plugin.status === 'ACTIVE' ? 'deactivate' : 'activate')} className={`rounded-lg px-4 py-2 text-sm font-medium text-white ${plugin.status === 'ACTIVE' ? 'bg-yellow-600 hover:bg-yellow-500' : 'bg-emerald-600 hover:bg-emerald-500'}`}>
             {plugin.status === 'ACTIVE' ? 'Disable' : 'Enable'}
           </button>
-          <button onClick={async () => { await pluginsApi.remove(pluginId); window.location.href = '/admin/plugins'; }} className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-100">Delete</button>
+          <button onClick={async () => { await pluginsApi.remove(pluginId); router.push('/admin/plugins'); }} className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-100">Delete</button>
         </div>
         
         <div className="flex items-center gap-3">

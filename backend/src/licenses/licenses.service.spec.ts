@@ -1,8 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { LicensesService } from './licenses.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { LicenseType, LicenseStatus, ActivationStatus, LicenseLogAction } from '@prisma/client';
+import { LicenseType, LicenseStatus, ActivationStatus } from '@prisma/client';
 import { CreateLicenseDto } from './dto/create-license.dto';
 import { ValidateLicenseDto } from './dto/validate-license.dto';
 import { ActivateLicenseDto } from './dto/activate-license.dto';
@@ -12,7 +16,6 @@ import { LicenseErrorCodes } from './dto/license-response.dto';
 
 describe('LicensesService', () => {
   let service: LicensesService;
-  let prismaService: PrismaService;
 
   const mockPrismaService = {
     client: {
@@ -47,7 +50,6 @@ describe('LicensesService', () => {
     }).compile();
 
     service = module.get<LicensesService>(LicensesService);
-    prismaService = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {
@@ -93,7 +95,9 @@ describe('LicensesService', () => {
       expect(result).toEqual(mockLicense);
       expect(mockPrismaService.license.create).toHaveBeenCalledWith({
         data: {
-          key: expect.stringMatching(/^PLG-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/),
+          key: expect.stringMatching(
+            /^PLG-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/,
+          ) as string,
           type: LicenseType.PLUGIN,
           clientId: 'client123',
           domain: 'example.com',
@@ -111,7 +115,9 @@ describe('LicensesService', () => {
 
       mockPrismaService.client.findUnique.mockResolvedValue(null);
 
-      await expect(service.createLicense(dto)).rejects.toThrow(NotFoundException);
+      await expect(service.createLicense(dto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw BadRequestException if client is not active', async () => {
@@ -128,7 +134,9 @@ describe('LicensesService', () => {
 
       mockPrismaService.client.findUnique.mockResolvedValue(mockClient);
 
-      await expect(service.createLicense(dto)).rejects.toThrow(BadRequestException);
+      await expect(service.createLicense(dto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw ConflictException if client already has active license of same type', async () => {
@@ -152,7 +160,9 @@ describe('LicensesService', () => {
       mockPrismaService.client.findUnique.mockResolvedValue(mockClient);
       mockPrismaService.license.findFirst.mockResolvedValue(existingLicense);
 
-      await expect(service.createLicense(dto)).rejects.toThrow(ConflictException);
+      await expect(service.createLicense(dto)).rejects.toThrow(
+        ConflictException,
+      );
     });
   });
 
@@ -365,7 +375,9 @@ describe('LicensesService', () => {
       };
 
       mockPrismaService.license.findUnique.mockResolvedValue(mockLicense);
-      mockPrismaService.licenseActivation.create.mockResolvedValue(mockActivation);
+      mockPrismaService.licenseActivation.create.mockResolvedValue(
+        mockActivation,
+      );
       mockPrismaService.license.update.mockResolvedValue({});
       mockPrismaService.licenseLog.create.mockResolvedValue({});
 
@@ -375,7 +387,7 @@ describe('LicensesService', () => {
       expect(result.activation).toEqual({
         id: 'activation123',
         domain: 'example.com',
-        activatedAt: expect.any(Date),
+        activatedAt: expect.any(Date) as Date,
       });
     });
 
@@ -525,9 +537,9 @@ describe('LicensesService', () => {
 
       mockPrismaService.license.findUnique.mockResolvedValue(mockLicense);
 
-      await expect(service.updateLicenseStatus('license123', dto)).rejects.toThrow(
-        BadRequestException
-      );
+      await expect(
+        service.updateLicenseStatus('license123', dto),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -558,7 +570,9 @@ describe('LicensesService', () => {
 
       mockPrismaService.license.findUnique.mockResolvedValue(mockLicense);
 
-      await expect(service.unblockLicense('license123')).rejects.toThrow(BadRequestException);
+      await expect(service.unblockLicense('license123')).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 });
