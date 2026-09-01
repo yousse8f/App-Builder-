@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth/auth-context';
-import { Users, CheckCircle, XCircle, FolderKanban, Key, Hammer, AlertCircle } from 'lucide-react';
+import { Users, CheckCircle, XCircle, FolderKanban, Key, Server } from 'lucide-react';
 import StatCard from '@/components/shared/ui/StatCard';
 import Card from '@/components/shared/ui/Card';
 import PageHeader from '@/components/shared/ui/PageHeader';
@@ -15,8 +15,7 @@ type DashboardStats = {
   blockedClients: number;
   totalProjects: number;
   activeLicenses: number;
-  totalBuilds: number;
-  failedBuilds: number;
+  whmcsConnections: number;
 };
 
 export default function AdminDashboard() {
@@ -28,8 +27,7 @@ export default function AdminDashboard() {
     blockedClients: 0,
     totalProjects: 0,
     activeLicenses: 0,
-    totalBuilds: 0,
-    failedBuilds: 0,
+    whmcsConnections: 0,
   });
   const [loadingStats, setLoadingStats] = useState(true);
 
@@ -51,8 +49,7 @@ export default function AdminDashboard() {
           blockedClients,
           totalProjects: 0,
           activeLicenses: 0,
-          totalBuilds: 0,
-          failedBuilds: 0,
+          whmcsConnections: 0,
         });
       } catch {
         if (isMounted) {
@@ -62,8 +59,7 @@ export default function AdminDashboard() {
             blockedClients: 0,
             totalProjects: 0,
             activeLicenses: 0,
-            totalBuilds: 0,
-            failedBuilds: 0,
+            whmcsConnections: 0,
           });
         }
       } finally {
@@ -100,8 +96,7 @@ export default function AdminDashboard() {
         <StatCard title={t.dashboard.stats.blockedClients} value={loadingStats ? '...' : stats.blockedClients} icon={XCircle} color="red" />
         <StatCard title={t.dashboard.stats.totalProjects} value={stats.totalProjects} icon={FolderKanban} color="purple" />
         <StatCard title={t.dashboard.stats.activeLicenses} value={stats.activeLicenses} icon={Key} color="blue" />
-        <StatCard title={t.dashboard.stats.totalBuilds} value={stats.totalBuilds} icon={Hammer} color="orange" />
-        <StatCard title={t.dashboard.stats.failedBuilds} value={stats.failedBuilds} icon={AlertCircle} color="red" />
+        <StatCard title="WHMCS Connections" value={stats.whmcsConnections} icon={Server} color="purple" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -120,17 +115,17 @@ export default function AdminDashboard() {
           </div>
         </Card>
         <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">{t.dashboard.recent.recentBuilds}</h3>
-          <div className="text-center py-8">
-            <Hammer className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 text-sm">{t.dashboard.empty.noRecentBuilds}</p>
-          </div>
-        </Card>
-        <Card className="p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">{t.dashboard.recent.licenseActivity}</h3>
           <div className="text-center py-8">
             <Key className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 text-sm">{t.dashboard.empty.noLicenseActivity}</p>
+          </div>
+        </Card>
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">WHMCS Integration Status</h3>
+          <div className="text-center py-8">
+            <Server className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500 text-sm">No WHMCS connections configured</p>
           </div>
         </Card>
       </div>

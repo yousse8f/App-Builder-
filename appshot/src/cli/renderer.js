@@ -22,8 +22,16 @@ async function uploadScreenshotToBackend(projectId, deviceId, filePath, fileName
     formData.append('deviceId', deviceId);
     formData.append('fileName', fileName);
 
+    // Check if we have an auth token available
+    const authToken = process.env.APPSHOT_AUTH_TOKEN;
+    const headers = formData.getHeaders();
+    
+    if (authToken) {
+      headers['Authorization'] = `Bearer ${authToken}`;
+    }
+
     const response = await axios.post(`${BACKEND_API_URL}/projects/${projectId}/screenshots`, formData, {
-      headers: formData.getHeaders(),
+      headers,
     });
 
     return response.data;

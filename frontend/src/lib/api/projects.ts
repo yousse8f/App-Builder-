@@ -11,6 +11,9 @@ export interface Project {
   createdAt: string;
   updatedAt: string;
   thumbnailUrl: string | null;
+  projectType?: string;
+  appshotProjectName?: string;
+  platform?: string;
 }
 
 export interface ProjectScreen {
@@ -155,6 +158,45 @@ export const projectsApi = {
       return response.data;
     } catch (error: any) {
       console.error('Failed to remove asset:', error);
+      if (error.response?.status === 400 && error.response?.data?.message?.includes('Client not found')) {
+        error.clientProfileError = true;
+      }
+      throw error;
+    }
+  },
+
+  getAppshotProject: async (appshotProjectName: string) => {
+    try {
+      const response = await api.get(`/screenshots/projects/${appshotProjectName}`);
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to fetch appshot project:', error);
+      if (error.response?.status === 400 && error.response?.data?.message?.includes('Client not found')) {
+        error.clientProfileError = true;
+      }
+      throw error;
+    }
+  },
+
+  downloadScreenshots: async (appshotProjectName: string) => {
+    try {
+      const response = await api.get(`/screenshots/projects/${appshotProjectName}/download`, {
+        responseType: 'blob',
+      });
+      
+      // Create a download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${appshotProjectName}-screenshots.zip`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      return true;
+    } catch (error: any) {
+      console.error('Failed to download screenshots:', error);
       if (error.response?.status === 400 && error.response?.data?.message?.includes('Client not found')) {
         error.clientProfileError = true;
       }

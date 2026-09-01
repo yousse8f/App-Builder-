@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ForbiddenException,
   Logger,
+  StreamableFile,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAppshotProjectDto } from './dto/create-appshot-project.dto';
@@ -330,10 +331,17 @@ export class ScreenshotsService {
   /**
    * Get Screenshots project data
    */
-  getAppshotProject(clientId: string, appshotProjectName: string) {
+  async getAppshotProject(clientId: string, appshotProjectName: string) {
     try {
-      // Verify ownership by checking the project name starts with clientId
-      if (!appshotProjectName.startsWith(`${clientId}_`)) {
+      // Verify ownership by checking if the client has a project with this appshotProjectName
+      const project = await this.prisma.project.findFirst({
+        where: {
+          clientId,
+          appshotProjectName,
+        },
+      });
+
+      if (!project) {
         throw new ForbiddenException('Access denied');
       }
 
@@ -351,6 +359,9 @@ export class ScreenshotsService {
       return projectData;
     } catch (error) {
       this.logger.error('Failed to get Screenshots project:', error);
+      if (error instanceof ForbiddenException || error instanceof NotFoundException) {
+        throw error;
+      }
       throw new NotFoundException('Failed to load Screenshots project');
     }
   }
@@ -358,10 +369,17 @@ export class ScreenshotsService {
   /**
    * Delete a Screenshots project
    */
-  deleteAppshotProject(clientId: string, appshotProjectName: string) {
+  async deleteAppshotProject(clientId: string, appshotProjectName: string) {
     try {
-      // Verify ownership
-      if (!appshotProjectName.startsWith(`${clientId}_`)) {
+      // Verify ownership by checking if the client has a project with this appshotProjectName
+      const project = await this.prisma.project.findFirst({
+        where: {
+          clientId,
+          appshotProjectName,
+        },
+      });
+
+      if (!project) {
         throw new ForbiddenException('Access denied');
       }
 
@@ -383,6 +401,9 @@ export class ScreenshotsService {
       this.logger.log(`Deleted Screenshots project: ${appshotProjectName}`);
     } catch (error) {
       this.logger.error('Failed to delete Screenshots project:', error);
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
       throw new Error('Failed to delete Screenshots project');
     }
   }
@@ -390,15 +411,22 @@ export class ScreenshotsService {
   /**
    * Upload an asset to a Screenshots project
    */
-  uploadAsset(
+  async uploadAsset(
     clientId: string,
     appshotProjectName: string,
     filename: string,
     buffer: Buffer,
   ) {
     try {
-      // Verify ownership
-      if (!appshotProjectName.startsWith(`${clientId}_`)) {
+      // Verify ownership by checking if the client has a project with this appshotProjectName
+      const project = await this.prisma.project.findFirst({
+        where: {
+          clientId,
+          appshotProjectName,
+        },
+      });
+
+      if (!project) {
         throw new ForbiddenException('Access denied');
       }
 
@@ -418,6 +446,9 @@ export class ScreenshotsService {
       return `assets/${filename}`;
     } catch (error) {
       this.logger.error('Failed to upload asset:', error);
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
       throw new Error('Failed to upload asset');
     }
   }
@@ -469,6 +500,66 @@ export class ScreenshotsService {
       throw new NotFoundException(
         'Failed to load devices from Screenshots module',
       );
+    }
+  }
+
+  /**
+   * Download all exported screenshots for a project as a ZIP file
+   */
+  async downloadScreenshots(clientId: string, appshotProjectName: string): Promise<StreamableFile> {
+    try {
+      // Verify ownership by checking if the client has a project with this appshotProjectName
+      const project = await this.prisma.project.findFirst({
+        where: {
+          clientId,
+          appshotProjectName,
+        },
+      });
+
+      if (!project) {
+        throw new ForbiddenException('Access denied');
+      }
+
+      const outDir = path.join(this.appshotPath, 'out', appshotProjectName);
+
+      if (!fs.existsSync(outDir)) {
+        throw new NotFoundException('No exported screenshots found for this project');
+      }
+
+      // Create a ZIP file from the output directory
+      const AdmZip = (await import('adm-zip')).default;
+      const zip = new AdmZip();
+
+      // Add all files from the output directory to the ZIP
+      this.addDirectoryToZip(zip, outDir, '');
+
+      const zipBuffer = zip.toBuffer();
+
+      return new StreamableFile(zipBuffer);
+    } catch (error) {
+      this.logger.error('Failed to download screenshots:', error);
+      if (error instanceof ForbiddenException || error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new NotFoundException('Failed to download screenshots');
+    }
+  }
+
+  /**
+   * Recursively add directory contents to ZIP
+   */
+  private addDirectoryToZip(zip: any, dirPath: string, zipPath: string) {
+    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const fullPath = path.join(dirPath, entry.name);
+      const relativePath = path.join(zipPath, entry.name);
+
+      if (entry.isDirectory()) {
+        this.addDirectoryToZip(zip, fullPath, relativePath);
+      } else if (entry.isFile()) {
+        zip.addLocalFile(fullPath, zipPath);
+      }
     }
   }
 }

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/auth-context';
-import { FolderKanban, Key, Hammer, Layout, Plus } from 'lucide-react';
+import { FolderKanban, Key, Hammer, Layout } from 'lucide-react';
 import StatCard from '@/components/shared/ui/StatCard';
 import Card from '@/components/shared/ui/Card';
 import PageHeader from '@/components/shared/ui/PageHeader';
@@ -19,7 +19,6 @@ export default function ClientDashboard() {
   const [appshotProjects, setAppshotProjects] = useState<any[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [loadingAppshot, setLoadingAppshot] = useState(true);
-  const [openingAppshot, setOpeningAppshot] = useState(false);
   const [stats, setStats] = useState({
     myProjects: 0,
     myTemplates: 0,
@@ -103,23 +102,6 @@ export default function ClientDashboard() {
     router.push('/dashboard/projects');
   };
 
-  const handleCreateTemplate = () => {
-    // Show loading state
-    setOpeningAppshot(true);
-    
-    // Simulate loading delay then open AppShots editor with new project modal
-    setTimeout(() => {
-      const token = typeof window !== 'undefined' ? (localStorage.getItem('accessToken') || localStorage.getItem('token')) : null;
-      const params = new URLSearchParams();
-      params.append('new', 'true');
-      if (token) params.append('token', token);
-      
-      const appshotUrl = `http://localhost:4321/?${params.toString()}`;
-      window.open(appshotUrl, '_blank');
-      setOpeningAppshot(false);
-    }, 1000); // 1 second loading delay
-  };
-
   return (
     <div>
       <PageHeader
@@ -193,29 +175,9 @@ export default function ClientDashboard() {
       <Card className="p-6 mb-8">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">MY TEMPLATES</h3>
-          <div className="flex gap-2">
-            <Button
-              variant="primary"
-              size="small"
-              onClick={handleCreateTemplate}
-              disabled={openingAppshot}
-            >
-              {openingAppshot ? (
-                <>
-                  <div className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
-                  Opening...
-                </>
-              ) : (
-                <>
-                  <Plus className="w-3 h-3 mr-1" />
-                  Create
-                </>
-              )}
-            </Button>
-            <Button variant="secondary" size="small" onClick={() => router.push('/dashboard/templates')}>
-              View All
-            </Button>
-          </div>
+          <Button variant="secondary" size="small" onClick={() => router.push('/dashboard/templates')}>
+            View All
+          </Button>
         </div>
         
         {loadingAppshot ? (

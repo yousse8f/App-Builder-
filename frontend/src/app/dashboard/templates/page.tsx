@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Layout, Edit, Trash2, RefreshCw } from 'lucide-react';
+import { Layout, Edit, Trash2, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 
 import PageHeader from '@/components/shared/ui/PageHeader';
@@ -16,7 +16,6 @@ export default function TemplatesPage() {
   const [loadingAppshot, setLoadingAppshot] = useState(true);
   const [refreshingAppshot, setRefreshingAppshot] = useState(false);
   const [deletingAppshotProject, setDeletingAppshotProject] = useState<string | null>(null);
-  const [openingAppshot, setOpeningAppshot] = useState(false);
   const [editingProject, setEditingProject] = useState<string | null>(null);
 
   const getAuthToken = useCallback(() => {
@@ -58,23 +57,6 @@ export default function TemplatesPage() {
   useEffect(() => {
     void loadAppshotProjects();
   }, [loadAppshotProjects, user?.client?.id]);
-
-  const handleCreateTemplate = () => {
-    // Show loading state
-    setOpeningAppshot(true);
-    
-    // Simulate loading delay then open AppShots editor with new project modal
-    setTimeout(() => {
-      const token = getAuthToken();
-      const params = new URLSearchParams();
-      params.append('new', 'true');
-      if (token) params.append('token', token);
-      
-      const appshotUrl = `http://localhost:4321/?${params.toString()}`;
-      window.open(appshotUrl, '_blank');
-      setOpeningAppshot(false);
-    }, 1000); // 1 second loading delay
-  };
 
   const handleEditAppshotProject = (projectName: string) => {
     // Show loading state
@@ -141,53 +123,14 @@ export default function TemplatesPage() {
         description="Manage your app screenshot templates"
       />
 
-      {/* Create Template Button */}
-      <div className="mb-6">
-        <Button
-          variant="primary"
-          className="flex items-center justify-center gap-2"
-          onClick={handleCreateTemplate}
-          disabled={openingAppshot}
-        >
-          {openingAppshot ? (
-            <>
-              <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              Opening AppShots...
-            </>
-          ) : (
-            <>
-              <Plus className="w-4 h-4" />
-              Create Template
-            </>
-          )}
-        </Button>
-      </div>
-
       {/* Templates Grid */}
       {appshotProjects.length === 0 ? (
         <Card className="p-12 text-center">
           <Layout className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No templates yet</h3>
-          <p className="text-gray-500 mb-6">
-            Create your first template using the AppShots editor
+          <p className="text-gray-500">
+            Use the Builds button in the sidebar to create new templates
           </p>
-          <Button 
-            variant="primary" 
-            onClick={handleCreateTemplate}
-            disabled={openingAppshot}
-          >
-            {openingAppshot ? (
-              <>
-                <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Opening AppShots...
-              </>
-            ) : (
-              <>
-                <Plus className="w-4 h-4 mr-2" />
-                Create Template
-              </>
-            )}
-          </Button>
         </Card>
       ) : (
         <>

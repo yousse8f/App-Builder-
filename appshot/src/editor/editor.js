@@ -1528,10 +1528,50 @@ async function doExport() {
   try {
     const res = await api.render(state.name, {});
     if (res.error) toast('Error: ' + res.error, 5000);
-    else { toast(`${res.files.length} images → out/${state.name}`, 4000); api.reveal(state.name); }
+    else { 
+      toast(`${res.files.length} images → out/${state.name}`, 4000); 
+      api.reveal(state.name);
+      
+      // Create project in Backend API after successful export
+      await createProjectInBackend();
+    }
   } finally {
     btn.disabled = false;
     btn.textContent = 'Export all';
+  }
+}
+
+async function createProjectInBackend() {
+  try {
+    const headers = getAuthHeaders();
+    const project = state.project;
+    
+    // Extract project data for Backend
+    const projectData = {
+      name: project.name || project.app || 'Untitled Project',
+      description: `Screenshots project exported from AppShot`,
+      projectType: 'screenshots',
+      appshotProjectName: state.name,
+    };
+    
+    const response = await fetch('http://localhost:3001/api/v1/projects', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(projectData),
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      toast('Project created in My Projects!', 3000);
+      console.log('Project created:', result);
+    } else {
+      const error = await response.json();
+      console.error('Failed to create project in backend:', error);
+      toast('Export completed, but failed to create project in My Projects', 4000);
+    }
+  } catch (error) {
+    console.error('Error creating project in backend:', error);
+    toast('Export completed, but failed to create project in My Projects', 4000);
   }
 }
 

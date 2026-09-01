@@ -48,7 +48,7 @@ export class ProjectsController {
       createProjectDto,
     );
 
-    // If this is a Screenshots project, create the corresponding Screenshots project
+    // If this is a Screenshots project with template, create the corresponding Screenshots project
     if (
       createProjectDto.projectType === 'screenshots' &&
       createProjectDto.appshotTemplateId
@@ -84,6 +84,22 @@ export class ProjectsController {
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
+    }
+
+    // If this is a Screenshots project created from AppShot export (appshotProjectName provided)
+    if (
+      createProjectDto.projectType === 'screenshots' &&
+      createProjectDto.appshotProjectName
+    ) {
+      // The project already exists in AppShot, just link it
+      const updatedProject = await this.projectsService.update(
+        project.id,
+        clientId,
+        {
+          appshotProjectName: createProjectDto.appshotProjectName,
+        },
+      );
+      return updatedProject;
     }
 
     return project;

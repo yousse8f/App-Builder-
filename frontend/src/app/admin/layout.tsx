@@ -9,14 +9,13 @@ import {
   Users,
   FolderKanban,
   Key,
-  Hammer,
   Puzzle,
-  Settings,
   LogOut,
   Menu,
   X,
   ChevronRight,
-  Layout
+  Layout,
+  Server
 } from 'lucide-react';
 import Link from 'next/link';
 import { useLanguage } from '@/lib/i18n/language-context';
@@ -59,8 +58,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     { name: (t.dashboard as any).templates || 'Templates', href: '/admin/templates', icon: Layout },
     { name: t.dashboard.licenses, href: '/admin/licenses', icon: Key },
     { name: 'Plugins', href: '/admin/plugins', icon: Puzzle },
-    { name: t.dashboard.builds, href: '/admin/builds', icon: Hammer },
-    { name: t.dashboard.settings, href: '/admin/settings', icon: Settings },
+    { name: (t.dashboard as any).whmcs || 'WHMCS', href: '/admin/whmcs', icon: Server },
   ];
 
   if (loading) {

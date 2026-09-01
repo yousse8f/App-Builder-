@@ -198,8 +198,7 @@ export const translations = {
       projects: 'Projects',
       templates: 'Templates',
       licenses: 'Licenses',
-      builds: 'Builds',
-      settings: 'Settings',
+      whmcs: 'WHMCS',
       profile: 'Profile',
       myProjects: 'My Projects',
       defaultUser: 'User',
@@ -213,14 +212,12 @@ export const translations = {
         blockedClients: 'Blocked Clients',
         totalProjects: 'Total Projects',
         activeLicenses: 'Active Licenses',
-        totalBuilds: 'Total Builds',
-        failedBuilds: 'Failed Builds',
+        whmcsConnections: 'WHMCS Connections',
         myProjects: 'My Projects',
       },
       recent: {
         recentClients: 'Recent Clients',
         recentProjects: 'Recent Projects',
-        recentBuilds: 'Recent Builds',
         licenseActivity: 'License Activity',
         quickActions: 'Quick Actions',
         createProject: 'Create New Project',
@@ -229,11 +226,9 @@ export const translations = {
       empty: {
         noRecentClients: 'No recent clients',
         noRecentProjects: 'No recent projects',
-        noRecentBuilds: 'No recent builds',
         noLicenseActivity: 'No recent license activity',
         noActiveLicenses: 'No active licenses',
         noRecentText: 'Your applications will appear here once you create your first project.',
-        noBuildText: 'Your build history will appear here.',
         noLicenseText: 'License management will be available soon.',
       },
       gettingStarted: {
@@ -353,7 +348,7 @@ export const translations = {
     faq: { title: 'Preguntas frecuentes', subtitle: 'Todo lo que necesitas saber sobre App Builder', items: [{ question: '¿Qué es App Builder?', answer: 'App Builder es una plataforma SaaS que permite crear y gestionar aplicaciones móviles a través de una plataforma centralizada. Proporciona herramientas de gestión de proyectos, personalización de aplicaciones y preparación de compilaciones.' }, { question: '¿Para quién es App Builder?', answer: 'App Builder está pensado para negocios y desarrolladores que quieren crear y gestionar aplicaciones móviles sin la complejidad del desarrollo tradicional. Es útil tanto para usuarios técnicos como no técnicos.' }, { question: '¿Necesito experiencia en programación?', answer: 'App Builder está diseñado para ser accesible para usuarios con distintos niveles de experiencia técnica. Aunque algunas funciones pueden requerir conocimientos técnicos, muchas partes de la plataforma están pensadas para ser intuitivas y fáciles de usar.' }, { question: '¿Puedo gestionar varias aplicaciones?', answer: 'Sí, App Builder te permite gestionar varios proyectos desde un solo panel. Puedes organizar, seguir y administrar todas tus aplicaciones en un mismo lugar.' }, { question: '¿Hay compilaciones automáticas?', answer: 'El proceso de compilación está diseñado para optimizar la preparación de aplicaciones. Nuestra plataforma ofrece flujos centralizados para gestionar y preparar tus builds. Esta funcionalidad forma parte de nuestro desarrollo continuo.' }, { question: '¿Cuándo estará disponible la gestión de licencias?', answer: 'La gestión de licencias está planificada en la plataforma. Esto te permitirá administrar licencias y activaciones desde un único lugar. Esta funcionalidad llegará próximamente.' }] },
     footer: { product: 'Producto', company: 'Empresa', resources: 'Recursos', legal: 'Legal', description: 'Crea y gestiona aplicaciones móviles con facilidad.', rights: 'Todos los derechos reservados.', links: { product: ['Funciones', 'Precios'], company: ['Acerca de', 'Contacto', 'Preguntas frecuentes'], resources: ['Documentación', 'Soporte'], legal: ['Política de privacidad', 'Términos del servicio'] } },
     auth: { customerTitle: 'Inicio de sesión del cliente', adminTitle: 'Inicio de sesión del administrador', headerSubtitle: 'Bienvenido de nuevo a App Builder', adminSubtitle: 'Acceso seguro para administradores', email: 'Correo electrónico', password: 'Contraseña', google: 'Google inicio de sesión próximamente', noAccount: '¿No tienes una cuenta?', signUp: 'Regístrate', adminPrompt: '¿Eres administrador?', customerPrompt: '¿Necesitas acceso del cliente?', customerLogin: 'Inicio de sesión del cliente', customerAccount: 'Crea tu cuenta de cliente', adminAccount: 'Crea tu cuenta de administrador', customerRegisterSubtitle: 'Empieza a crear tus apps con una cuenta de cliente', adminRegisterSubtitle: 'Empieza a crear y gestionar tu cuenta con todos los permisos', goHome: 'Ir a inicio', createAccount: 'Crear cuenta', createAdminAccount: 'Crear cuenta de administrador', createCustomerAccount: 'Crear cuenta de cliente', submitCustomerLogin: 'Iniciar sesión', submitAdminLogin: 'Iniciar sesión de administrador', loading: 'Iniciando sesión...', forgotPassword: '¿Olvidaste tu contraseña?' },
-    dashboard: { loading: 'Cargando...', logout: 'Cerrar sesión', adminDashboard: 'Panel de administración', clientDashboard: 'Panel del cliente', welcome: 'Bienvenido de nuevo,', admin: 'Administrador', client: 'Cliente', dashboardLabel: 'Panel', clients: 'Clientes', projects: 'Proyectos', licenses: 'Licencias', builds: 'Compilaciones', settings: 'Configuración', profile: 'Perfil', myProjects: 'Mis proyectos', defaultUser: 'Usuario', defaultAdmin: 'Administrador', summaryText: 'Así está avanzando tu plataforma hoy.', welcomeBackTo: 'Bienvenido a', greeting: { morning: 'Buenos días', afternoon: 'Buenas tardes', evening: 'Buenas noches' }, stats: { totalClients: 'Total de clientes', activeClients: 'Clientes activos', blockedClients: 'Clientes bloqueados', totalProjects: 'Total de proyectos', activeLicenses: 'Licencias activas', totalBuilds: 'Total de builds', failedBuilds: 'Builds fallidos', myProjects: 'Mis proyectos' }, recent: { recentClients: 'Clientes recientes', recentProjects: 'Proyectos recientes', recentBuilds: 'Builds recientes', licenseActivity: 'Actividad de licencias', quickActions: 'Acciones rápidas', createProject: 'Crear nuevo proyecto', gettingStarted: 'Primeros pasos' }, empty: { noRecentClients: 'No hay clientes recientes', noRecentProjects: 'No hay proyectos recientes', noRecentBuilds: 'No hay builds recientes', noLicenseActivity: 'No hay actividad reciente de licencias', noActiveLicenses: 'No hay licencias activas', noRecentText: 'Tus aplicaciones aparecerán aquí cuando crees tu primer proyecto.', noBuildText: 'Tu historial de builds aparecerá aquí.', noLicenseText: 'La gestión de licencias estará disponible pronto.' }, gettingStarted: { step1Title: 'Crea tu primer proyecto', step1Desc: 'Empieza a construir tu aplicación móvil', step2Title: 'Personaliza tu aplicación', step2Desc: 'Adapta tu app a tus necesidades con herramientas intuitivas', step3Title: 'Personaliza y construye', step3Desc: 'Adapta tu app y prepárala para el despliegue', licenseStatus: 'Estado de licencias' } },
+    dashboard: { loading: 'Cargando...', logout: 'Cerrar sesión', adminDashboard: 'Panel de administración', clientDashboard: 'Panel del cliente', welcome: 'Bienvenido de nuevo,', admin: 'Administrador', client: 'Cliente', dashboardLabel: 'Panel', clients: 'Clientes', projects: 'Proyectos', licenses: 'Licencias', whmcs: 'WHMCS', profile: 'Perfil', myProjects: 'Mis proyectos', defaultUser: 'Usuario', defaultAdmin: 'Administrador', summaryText: 'Así está avanzando tu plataforma hoy.', welcomeBackTo: 'Bienvenido a', greeting: { morning: 'Buenos días', afternoon: 'Buenas tardes', evening: 'Buenas noches' }, stats: { totalClients: 'Total de clientes', activeClients: 'Clientes activos', blockedClients: 'Clientes bloqueados', totalProjects: 'Total de proyectos', activeLicenses: 'Licencias activas', whmcsConnections: 'Conexiones WHMCS', myProjects: 'Mis proyectos' }, recent: { recentClients: 'Clientes recientes', recentProjects: 'Proyectos recientes', licenseActivity: 'Actividad de licencias', quickActions: 'Acciones rápidas', createProject: 'Crear nuevo proyecto', gettingStarted: 'Primeros pasos' }, empty: { noRecentClients: 'No hay clientes recientes', noRecentProjects: 'No hay proyectos recientes', noLicenseActivity: 'No hay actividad reciente de licencias', noActiveLicenses: 'No hay licencias activas', noRecentText: 'Tus aplicaciones aparecerán aquí cuando crees tu primer proyecto.', noLicenseText: 'La gestión de licencias estará disponible pronto.' }, gettingStarted: { step1Title: 'Crea tu primer proyecto', step1Desc: 'Empieza a construir tu aplicación móvil', step2Title: 'Personaliza tu aplicación', step2Desc: 'Adapta tu app a tus necesidades con herramientas intuitivas', step3Title: 'Personaliza y construye', step3Desc: 'Adapta tu app y prepárala para el despliegue', licenseStatus: 'Estado de licencias' } },
 
   },
   fr: {

@@ -512,6 +512,12 @@ export function createServer({ renderProject } = {}) {
         return f ? serveFile(res, f) : res.writeHead(403).end('Forbidden');
       }
       if (p.startsWith('/projects/')) {
+        // Bypass authentication for render files (.render-*.html) and assets during local rendering
+        if (p.includes('.render-') || p.includes('/assets/')) {
+          const f = resolveWithin(PROJECTS_DIR, p.slice('/projects'.length));
+          return f ? serveFile(res, f) : res.writeHead(403).end('Forbidden');
+        }
+        
         // Check authentication for project files
         let authenticatedClientId = await getAuthenticatedClientId(req);
         

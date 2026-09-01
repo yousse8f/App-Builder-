@@ -44,4 +44,8 @@ export class CreateProjectDto {
   @IsOptional()
   @IsString()
   appshotTemplateId?: string;
+
+  @IsOptional()
+  @IsString()
+  appshotProjectName?: string;
 }

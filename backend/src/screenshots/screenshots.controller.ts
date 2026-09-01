@@ -9,6 +9,8 @@ import {
   BadRequestException,
   HttpCode,
   HttpStatus,
+  StreamableFile,
+  Header,
 } from '@nestjs/common';
 import { ScreenshotsService } from './screenshots.service';
 import { CreateAppshotProjectDto } from './dto/create-appshot-project.dto';
@@ -109,6 +111,24 @@ export class ScreenshotsController {
       );
     }
     return this.screenshotsService.deleteAppshotProject(
+      clientId,
+      appshotProjectName,
+    );
+  }
+
+  @Get('projects/:appshotProjectName/download')
+  @Header('Content-Type', 'application/zip')
+  @Header('Content-Disposition', 'attachment; filename="screenshots.zip"')
+  async downloadScreenshots(
+    @CurrentUser('client.id') clientId: string | null,
+    @Param('appshotProjectName') appshotProjectName: string,
+  ) {
+    if (!clientId) {
+      throw new BadRequestException(
+        'Client not found. Please ensure your account has a client profile.',
+      );
+    }
+    return this.screenshotsService.downloadScreenshots(
       clientId,
       appshotProjectName,
     );
