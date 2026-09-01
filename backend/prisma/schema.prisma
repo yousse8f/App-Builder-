@@ -28,6 +28,7 @@ enum ClientStatus {
 enum LicenseType {
   PLUGIN
   BUILDER
+  SCREEN_TEMPLATE
 }
 
 enum LicenseStatus {

@@ -6,6 +6,9 @@ import { ArrowLeft, Plus, Smartphone, Image as ImageIcon, Download, Trash2 } fro
 import { projectsApi, Project, ProjectScreen } from '@/lib/api/projects';
 import Button from '@/components/shared/Button';
 import Card from '@/components/shared/ui/Card';
+import { api } from '@/lib/api/client';
+
+
 
 export default function ProjectEditorPage() {
   const router = useRouter();
@@ -43,8 +46,7 @@ export default function ProjectEditorPage() {
 
   const handleCreateScreenshots = () => {
     // Open appshot editor in a new tab/window
-    // The appshot server typically runs on port 4321
-    const appshotUrl = `http://localhost:4321/?project=${encodeURIComponent(projectId)}`;
+    const appshotUrl = `${process.env.NEXT_PUBLIC_APPSHOTS_URL || 'http://localhost:4321'}/?project=${encodeURIComponent(projectId)}`;
     window.open(appshotUrl, '_blank');
   };
 
@@ -165,7 +167,7 @@ export default function ProjectEditorPage() {
                 <div className="text-center py-8 text-gray-500">
                   <ImageIcon className="w-12 h-12 mx-auto mb-4 text-gray-400" />
                   <p>No screenshots exported yet</p>
-                  <p className="text-sm mt-2">Use the "Create Screenshots" button to generate screenshots</p>
+                  <p className="text-sm mt-2">Use the &quot;Create Screenshots&quot; button to generate screenshots</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -175,7 +177,7 @@ export default function ProjectEditorPage() {
                       <div key={asset.id} className="relative group">
                         <div className="aspect-[9/16] bg-gray-100 rounded-lg overflow-hidden">
                           <img
-                            src={"http://localhost:3001" + asset.url}
+                            src={api.defaults.baseURL + asset.url}
                             alt={asset.name}
                             className="w-full h-full object-cover"
                           />
@@ -184,7 +186,7 @@ export default function ProjectEditorPage() {
                           <p className="text-sm font-medium text-gray-900 truncate">{asset.name}</p>
                           <div className="flex gap-1">
                             <button
-                              onClick={() => handleDownloadScreenshot("http://localhost:3001" + asset.url, asset.name)}
+                              onClick={() => handleDownloadScreenshot(api.defaults.baseURL + asset.url, asset.name)}
                               className="p-1 hover:bg-gray-100 rounded"
                               title="Download"
                             >

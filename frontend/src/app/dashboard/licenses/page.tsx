@@ -6,6 +6,7 @@ import PageHeader from '@/components/shared/ui/PageHeader';
 import Card from '@/components/shared/ui/Card';
 import Badge from '@/components/shared/ui/Badge';
 import { License, LicenseType, LicenseStatus } from '@/types/license';
+import { api } from '@/lib/api/client';
 
 export default function ClientLicenses() {
   const [licenses, setLicenses] = useState<License[]>([]);
@@ -13,16 +14,8 @@ export default function ClientLicenses() {
 
   const fetchMyLicenses = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3001/api/v1/licenses/my-licenses', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setLicenses(data);
-      }
+      const response = await api.get('/licenses/my-licenses');
+      setLicenses(response.data);
     } catch (error) {
       console.error('Error fetching licenses:', error);
     } finally {

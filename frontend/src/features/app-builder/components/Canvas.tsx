@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { ScreenConfig, Element } from './types';
 
 interface CanvasProps {
@@ -21,6 +21,53 @@ export default function Canvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+
+  const drawElement = useCallback((ctx: CanvasRenderingContext2D, element: Element, isSelected: boolean) => {
+    ctx.save();
+
+    if (element.rotation) {
+      ctx.translate(element.x + (element.width || 0) / 2, element.y + (element.height || 0) / 2);
+      ctx.rotate((element.rotation * Math.PI) / 180);
+      ctx.translate(-(element.x + (element.width || 0) / 2), -(element.y + (element.height || 0) / 2));
+    }
+
+    if (element.opacity !== undefined) {
+      ctx.globalAlpha = element.opacity;
+    }
+
+    // Draw based on element type
+    if (element.type === 'text') {
+      ctx.font = `${element.fontWeight || 'normal'} ${element.fontSize || 16}px ${element.font || 'Arial'}`;
+      ctx.fillStyle = element.color || '#000000';
+      ctx.textAlign = element.alignment || 'left';
+      ctx.fillText(element.text || '', element.x, element.y + (element.fontSize || 16));
+    } else if (element.type === 'button') {
+      ctx.fillStyle = element.color || '#000000';
+      ctx.fillRect(element.x, element.y, element.width || 100, element.height || 40);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '14px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(element.text || 'Button', element.x + (element.width || 100) / 2, element.y + (element.height || 40) / 2 + 5);
+    } else if (element.type === 'image' && element.url) {
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, element.x, element.y, element.width || 100, element.height || 100);
+      };
+      img.src = element.url;
+    } else if (element.type === 'shape') {
+      ctx.fillStyle = element.color || '#000000';
+      ctx.fillRect(element.x, element.y, element.width || 100, element.height || 100);
+    }
+
+    // Draw selection border
+    if (isSelected) {
+      ctx.strokeStyle = '#3B82F6';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 5]);
+      ctx.strokeRect(element.x - 2, element.y - 2, (element.width || 100) + 4, (element.height || 100) + 4);
+      ctx.setLineDash([]);
+    }
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -54,9 +101,7 @@ export default function Canvas({
     config.elements.forEach((element) => {
       drawElement(ctx, element, element.id === selectedElementId);
     });
-  }, [config, selectedElementId]);
-
-  const drawElement = (ctx: CanvasRenderingContext2D, element: Element, isSelected: boolean) => {
+  }, [config, selectedElementId, drawElement]);
     ctx.save();
 
     if (element.rotation) {
@@ -127,7 +172,7 @@ export default function Canvas({
       ctx.strokeRect(element.x - 2, element.y - 2, (element.width || 100) + 4, (element.height || 100) + 4);
       ctx.setLineDash([]);
     }
-  };
+  }, []);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;

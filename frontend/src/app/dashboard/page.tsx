@@ -11,12 +11,14 @@ import Button from '@/components/shared/Button';
 import { useLanguage } from '@/lib/i18n/language-context';
 import { projectsApi, Project } from '@/lib/api/projects';
 
+const APPSHOTS_URL = process.env.NEXT_PUBLIC_APPSHOTS_URL || 'http://localhost:4321';
+
 export default function ClientDashboard() {
   const router = useRouter();
   const { user } = useAuth();
   const { t } = useLanguage();
   const [projects, setProjects] = useState<Project[]>([]);
-  const [appshotProjects, setAppshotProjects] = useState<any[]>([]);
+  const [appshotProjects, setAppshotProjects] = useState<Array<{ name: string; thumbnail?: string; frames?: number | Array<unknown> }>>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [loadingAppshot, setLoadingAppshot] = useState(true);
   const [stats, setStats] = useState({
@@ -60,7 +62,7 @@ export default function ClientDashboard() {
       }
 
       // Fetch projects from AppShot server - server will use authenticated clientId
-      const url = 'http://localhost:4321/api/projects';
+      const url = `${APPSHOTS_URL}/api/projects`;
       
       const response = await fetch(url, { headers });
       
@@ -198,7 +200,7 @@ export default function ClientDashboard() {
                 <div className="aspect-video bg-gradient-to-br from-purple-500 to-pink-600 relative">
                   {project.thumbnail ? (
                     <img
-                      src={`http://localhost:4321/api/projects/${encodeURIComponent(project.name)}/thumbnail`}
+                      src={`${APPSHOTS_URL}/api/projects/${encodeURIComponent(project.name)}/thumbnail`}
                       alt={project.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -232,7 +234,7 @@ export default function ClientDashboard() {
                       params.append('project', project.name);
                       if (token) params.append('token', token);
                       
-                      const appshotUrl = `http://localhost:4321/?${params.toString()}`;
+                      const appshotUrl = `${APPSHOTS_URL}/?${params.toString()}`;
                       window.open(appshotUrl, '_blank');
                     }}
                   >

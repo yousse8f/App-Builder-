@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react';
 
+const APPSHOTS_URL = process.env.NEXT_PUBLIC_APPSHOTS_URL || 'http://localhost:4321';
+
 export default function ClientBuilds() {
   useEffect(() => {
     const token = typeof window !== 'undefined' ? (localStorage.getItem('accessToken') || localStorage.getItem('token')) : null;
@@ -9,7 +11,7 @@ export default function ClientBuilds() {
     params.append('new', 'true');
     if (token) params.append('token', token);
 
-    const appshotUrl = `http://localhost:4321/?${params.toString()}`;
+    const appshotUrl = `${APPSHOTS_URL}/?${params.toString()}`;
     window.open(appshotUrl, '_blank');
   }, []);
 

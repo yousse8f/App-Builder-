@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { Layout, Eye, RefreshCw, Users, Loader2, Trash2, Plus, X, Check } from 'lucide-react';
+import { Layout, RefreshCw, Users, Loader2, Trash2, Plus, X, Check } from 'lucide-react';
 import PageHeader from '@/components/shared/ui/PageHeader';
 import Card from '@/components/shared/ui/Card';
 import Button from '@/components/shared/Button';
@@ -27,7 +26,6 @@ interface ClientTemplate {
 }
 
 export default function AdminTemplates() {
-  const router = useRouter();
   const [clients, setClients] = useState<Client[]>([]);
   const [allTemplates, setAllTemplates] = useState<Template[]>([]);
   const [clientTemplates, setClientTemplates] = useState<ClientTemplate[]>([]);
@@ -46,12 +44,12 @@ export default function AdminTemplates() {
       const clientsResponse = await clientsApi.getClients({ page: 1, pageSize: 1000 });
       const clientsData = clientsResponse.clients ?? [];
       setClients(clientsData);
-      console.log('Clients loaded:', clientsData.length);
+
 
       // Load all available templates (admin view - no clientId filter)
       try {
         const templatesResponse = await api.get('/screenshots/templates');
-        console.log('Templates data received:', templatesResponse.data);
+
         setAllTemplates(templatesResponse.data);
       } catch (error) {
         console.error('Failed to load templates:', error);
@@ -60,10 +58,8 @@ export default function AdminTemplates() {
 
       // Load client template assignments if a client is selected
       if (selectedClient) {
-        console.log('Loading templates for client:', selectedClient);
         try {
           const clientTemplatesResponse = await api.get(`/clients/${selectedClient}/templates`);
-          console.log('Client templates data received:', clientTemplatesResponse.data);
           setClientTemplates(clientTemplatesResponse.data);
         } catch (error) {
           console.error('Failed to load client templates:', error);
@@ -247,7 +243,7 @@ export default function AdminTemplates() {
               <Layout className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">No templates assigned</h3>
               <p className="text-gray-500 mb-4">
-                This client doesn't have access to any templates yet.
+                This client doesn&apos;t have access to any templates yet.
               </p>
               <Button onClick={() => setShowAssignModal(true)}>
                 Assign First Template

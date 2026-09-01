@@ -12,6 +12,7 @@ import Button from '@/components/shared/Button';
 import Input from '@/components/shared/Input';
 import { License, LicenseType, LicenseStatus, CreateLicenseDto } from '@/types/license';
 import type { Client } from '@/types/client';
+import { api } from '@/lib/api/client';
 
 export default function AdminLicenses() {
   const router = useRouter();
@@ -31,16 +32,8 @@ export default function AdminLicenses() {
 
   const fetchLicenses = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3001/api/v1/licenses', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setLicenses(data);
-      }
+      const response = await api.get('/licenses');
+      setLicenses(response.data);
     } catch (error) {
       console.error('Error fetching licenses:', error);
     }
@@ -48,16 +41,8 @@ export default function AdminLicenses() {
 
   const fetchClients = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3001/api/v1/clients', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setClients(data);
-      }
+      const response = await api.get('/clients');
+      setClients(response.data);
     } catch (error) {
       console.error('Error fetching clients:', error);
     }
@@ -72,32 +57,17 @@ export default function AdminLicenses() {
   const handleCreateLicense = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3001/api/v1/licenses', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(createForm),
+      const response = await api.post('/licenses', createForm);
+      setLicenses([response.data, ...licenses]);
+      setIsCreateModalOpen(false);
+      setCreateForm({
+        type: 'PLUGIN',
+        clientId: '',
+        domain: '',
+        expiresAt: '',
+        activationLimit: 1,
       });
-
-      if (response.ok) {
-        const newLicense = await response.json();
-        setLicenses([newLicense, ...licenses]);
-        setIsCreateModalOpen(false);
-        setCreateForm({
-          type: 'PLUGIN',
-          clientId: '',
-          domain: '',
-          expiresAt: '',
-          activationLimit: 1,
-        });
-        alert('License created successfully!');
-      } else {
-        const error = await response.json();
-        alert(error.message || 'Failed to create license');
-      }
+      alert('License created successfully!');
     } catch (error) {
       console.error('Error creating license:', error);
       alert('Failed to create license');

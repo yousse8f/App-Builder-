@@ -8,6 +8,7 @@ import Card from '@/components/shared/ui/Card';
 import Badge from '@/components/shared/ui/Badge';
 import Button from '@/components/shared/Button';
 import { License, LicenseType, LicenseStatus, LicenseLog } from '@/types/license';
+import { api } from '@/lib/api/client';
 
 export default function LicenseDetails() {
   const params = useParams();
@@ -21,19 +22,8 @@ export default function LicenseDetails() {
 
   const fetchLicenseDetails = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3001/api/v1/licenses/${licenseId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setLicense(data);
-      } else {
-        alert('License not found');
-        router.push('/admin/licenses');
-      }
+      const response = await api.get(`/licenses/${licenseId}`);
+      setLicense(response.data);
     } catch (error) {
       console.error('Error fetching license details:', error);
       alert('Failed to fetch license details');
@@ -45,16 +35,8 @@ export default function LicenseDetails() {
 
   const fetchLicenseLogs = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3001/api/v1/licenses/${licenseId}/logs`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setLicenseLogs(data);
-      }
+      const response = await api.get(`/licenses/${licenseId}/logs`);
+      setLicenseLogs(response.data);
     } catch (error) {
       console.error('Error fetching license logs:', error);
     } finally {
@@ -75,23 +57,9 @@ export default function LicenseDetails() {
 
   const handleUpdateLicenseStatus = async (status: LicenseStatus) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3001/api/v1/licenses/${licenseId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status }),
-      });
-
-      if (response.ok) {
-        setLicense((current) => (current ? { ...current, status } : null));
-        fetchLicenseLogs();
-      } else {
-        const error = await response.json();
-        alert(error.message || 'Failed to update license status');
-      }
+      await api.put(`/licenses/${licenseId}/status`, { status });
+      setLicense((current) => (current ? { ...current, status } : null));
+      fetchLicenseLogs();
     } catch (error) {
       console.error('Error updating license status:', error);
       alert('Failed to update license status');
@@ -100,21 +68,9 @@ export default function LicenseDetails() {
 
   const handleUnblockLicense = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3001/api/v1/licenses/${licenseId}/unblock`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        setLicense((current) => (current ? { ...current, status: 'ACTIVE' } : null));
-        fetchLicenseLogs();
-      } else {
-        const error = await response.json();
-        alert(error.message || 'Failed to unblock license');
-      }
+      await api.post(`/licenses/${licenseId}/unblock`);
+      setLicense((current) => (current ? { ...current, status: 'ACTIVE' } : null));
+      fetchLicenseLogs();
     } catch (error) {
       console.error('Error unblocking license:', error);
       alert('Failed to unblock license');
@@ -127,24 +83,10 @@ export default function LicenseDetails() {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3001/api/v1/licenses/admin/deactivate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ licenseKey, domain }),
-      });
-
-      if (response.ok) {
-        alert('License deactivated successfully');
-        fetchLicenseDetails();
-        fetchLicenseLogs();
-      } else {
-        const error = await response.json();
-        alert(error.message || 'Failed to deactivate license');
-      }
+      await api.post('/licenses/admin/deactivate', { licenseKey, domain });
+      alert('License deactivated successfully');
+      fetchLicenseDetails();
+      fetchLicenseLogs();
     } catch (error) {
       console.error('Error deactivating license:', error);
       alert('Failed to deactivate license');

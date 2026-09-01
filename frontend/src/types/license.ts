@@ -1,4 +1,4 @@
-export type LicenseType = 'PLUGIN' | 'BUILDER';
+export type LicenseType = 'PLUGIN' | 'BUILDER' | 'SCREEN_TEMPLATE';
 export type LicenseStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'BLOCKED' | 'EXPIRED';
 export type ActivationStatus = 'ACTIVE' | 'INACTIVE';
 

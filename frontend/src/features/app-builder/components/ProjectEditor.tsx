@@ -6,6 +6,7 @@ import { Element, ScreenConfig } from './types';
 import Canvas from './Canvas';
 import PropertiesPanel from './PropertiesPanel';
 import Button from '@/components/shared/Button';
+import { ProjectAsset } from '@/lib/api/projects';
 
 interface ProjectScreen {
   id: string;
@@ -20,7 +21,7 @@ interface Project {
   description?: string;
   status: string;
   screens: ProjectScreen[];
-  assets: any[];
+  assets: ProjectAsset[];
   width?: number;
   height?: number;
   deviceType?: string;
@@ -53,7 +54,7 @@ export default function ProjectEditor({ project, onUpdate }: ProjectEditorProps)
           value: '#FFFFFF',
         },
         device: {
-          type: project.deviceType?.toLowerCase() as any || 'iphone',
+          type: (project.deviceType?.toLowerCase() as 'iphone' | 'ipad' | 'android-phone' | 'android-tablet') || 'iphone',
           model: '6.9',
         },
         elements: [] as Element[],
@@ -90,7 +91,7 @@ export default function ProjectEditor({ project, onUpdate }: ProjectEditorProps)
 
     const newScreen: ProjectScreen = {
       ...screenToDuplicate,
-      id: `screen-${Date.now()}`,
+      id: `screen-${crypto.randomUUID()}`,
       name: `${screenToDuplicate.name} (Copy)`,
       order: project.screens.length,
       config: {
@@ -311,7 +312,7 @@ export default function ProjectEditor({ project, onUpdate }: ProjectEditorProps)
                   value={selectedScreen.config.background.type}
                   onChange={(e) => handleUpdateScreen(selectedScreen.id, {
                     ...selectedScreen.config,
-                    background: { ...selectedScreen.config.background, type: e.target.value as any }
+                    background: { ...selectedScreen.config.background, type: e.target.value as 'color' | 'gradient' | 'image' }
                   })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                 >

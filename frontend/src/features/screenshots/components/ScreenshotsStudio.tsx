@@ -40,10 +40,10 @@ export default function ScreenshotsStudio({
         // Get token from localStorage if not provided via props
         const token = authToken || (typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null);
         
-        console.log('Loading appshot editor with token:', token ? 'present' : 'missing');
+
         
         // Construct the AppShots URL with user context
-        const baseUrl = 'http://127.0.0.1:4321';
+        const baseUrl = process.env.NEXT_PUBLIC_APPSHOTS_URL || 'http://127.0.0.1:4321';
         const params = new URLSearchParams();
         
         // Only pass token for auto-login - userName is no longer supported
@@ -51,7 +51,6 @@ export default function ScreenshotsStudio({
         if (projectId) params.append('projectId', projectId);
         
         const url = `${baseUrl}/?${params.toString()}`;
-        console.log('Appshot URL:', url);
         setAppshotUrl(url);
         
         setLoading(false);

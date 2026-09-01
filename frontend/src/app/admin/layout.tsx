@@ -55,10 +55,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     { name: t.dashboard.dashboardLabel, href: '/admin/dashboard', icon: LayoutDashboard },
     { name: t.dashboard.clients, href: '/admin/clients', icon: Users },
     { name: t.dashboard.projects, href: '/admin/projects', icon: FolderKanban },
-    { name: (t.dashboard as any).templates || 'Templates', href: '/admin/templates', icon: Layout },
+    { name: (t.dashboard as { templates?: string }).templates || 'Templates', href: '/admin/templates', icon: Layout },
     { name: t.dashboard.licenses, href: '/admin/licenses', icon: Key },
     { name: 'Plugins', href: '/admin/plugins', icon: Puzzle },
-    { name: (t.dashboard as any).whmcs || 'WHMCS', href: '/admin/whmcs', icon: Server },
+    { name: (t.dashboard as { whmcs?: string }).whmcs || 'WHMCS', href: '/admin/whmcs', icon: Server },
   ];
 
   if (loading) {

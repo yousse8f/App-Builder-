@@ -117,7 +117,7 @@ export default function WHMCSPage() {
     }
   };
 
-  const handleTestConnection = async (config: WHMCSConfig) => {
+  const handleTestConnection = async () => {
     try {
       // Replace with actual API call
       alert('Connection test successful!');
@@ -127,7 +127,7 @@ export default function WHMCSPage() {
     }
   };
 
-  const handleSync = async (config: WHMCSConfig) => {
+  const handleSync = async () => {
     try {
       // Replace with actual API call
       alert('Sync completed successfully!');
@@ -237,7 +237,7 @@ export default function WHMCSPage() {
             <Server className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No WHMCS Configurations</h3>
             <p className="text-gray-500 mb-6">
-              You haven't configured any WHMCS integrations yet. Add your first configuration to start syncing billing data.
+              You haven&apos;t configured any WHMCS integrations yet. Add your first configuration to start syncing billing data.
             </p>
             <Button onClick={handleAddConfig}>
               <Plus className="w-4 h-4 mr-2" />
@@ -291,7 +291,7 @@ export default function WHMCSPage() {
                     <Button
                       variant="secondary"
                       size="small"
-                      onClick={() => handleTestConnection(config)}
+                      onClick={() => handleTestConnection()}
                     >
                       <Shield className="w-4 h-4 mr-1" />
                       Test
@@ -299,7 +299,7 @@ export default function WHMCSPage() {
                     <Button
                       variant="secondary"
                       size="small"
-                      onClick={() => handleSync(config)}
+                      onClick={() => handleSync()}
                     >
                       <RefreshCw className="w-4 h-4 mr-1" />
                       Sync

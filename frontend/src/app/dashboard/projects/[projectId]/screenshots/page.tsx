@@ -77,7 +77,6 @@ export default function ScreenshotsPage() {
       primaryColor={undefined} // Will be populated from project data when available
       template={undefined} // Will be populated from project data when available
       authToken={localStorage.getItem('accessToken') || undefined}
-      userName={user?.name}
     />
   );
 }

@@ -4,6 +4,7 @@ import * as crypto from 'crypto';
 const PREFIXES: Record<LicenseType, string> = {
   PLUGIN: 'PLG',
   BUILDER: 'BLD',
+  SCREEN_TEMPLATE: 'SCR',
 };
 
 function generateRandomSegment(length: number): string {
@@ -29,7 +30,7 @@ export function generateLicenseKey(type: LicenseType): string {
 }
 
 export function validateLicenseKeyFormat(key: string): boolean {
-  const pattern = /^(PLG|BLD)-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+  const pattern = /^(PLG|BLD|SCR)-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
   return pattern.test(key);
 }
 
@@ -42,6 +43,7 @@ export function getLicenseTypeFromKey(key: string): LicenseType | null {
 
   if (prefix === 'PLG') return LicenseType.PLUGIN;
   if (prefix === 'BLD') return LicenseType.BUILDER;
+  if (prefix === 'SCR') return LicenseType.SCREEN_TEMPLATE;
 
   return null;
 }

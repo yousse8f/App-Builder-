@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+
 import { Layout, Edit, Trash2, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 
@@ -9,8 +9,10 @@ import PageHeader from '@/components/shared/ui/PageHeader';
 import Card from '@/components/shared/ui/Card';
 import Button from '@/components/shared/Button';
 
+const APPSHOTS_URL = process.env.NEXT_PUBLIC_APPSHOTS_URL || 'http://localhost:4321';
+
 export default function TemplatesPage() {
-  const router = useRouter();
+
   const { user } = useAuth();
   const [appshotProjects, setAppshotProjects] = useState<any[]>([]);
   const [loadingAppshot, setLoadingAppshot] = useState(true);
@@ -36,7 +38,7 @@ export default function TemplatesPage() {
       }
 
       // Get client's projects from AppShot - server will use authenticated clientId
-      const url = 'http://localhost:4321/api/projects';
+      const url = `${APPSHOTS_URL}/api/projects`;
 
       const appshotResponse = await fetch(url, { headers });
 
@@ -69,7 +71,7 @@ export default function TemplatesPage() {
       params.append('project', projectName);
       if (token) params.append('token', token);
       
-      const appshotUrl = `http://localhost:4321/?${params.toString()}`;
+      const appshotUrl = `${APPSHOTS_URL}/?${params.toString()}`;
       window.open(appshotUrl, '_blank');
       setEditingProject(null);
     }, 1000); // 1 second loading delay
@@ -88,7 +90,7 @@ export default function TemplatesPage() {
 
     setDeletingAppshotProject(projectName);
     try {
-      const response = await fetch(`http://localhost:4321/api/project/${encodeURIComponent(projectName)}`, {
+      const response = await fetch(`${APPSHOTS_URL}/api/project/${encodeURIComponent(projectName)}`, {
         method: 'DELETE',
       });
 

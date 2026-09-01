@@ -10,7 +10,7 @@ interface PropertiesPanelProps {
 }
 
 export default function PropertiesPanel({ element, onUpdate, onDelete }: PropertiesPanelProps) {
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: string | number | boolean) => {
     onUpdate(element.id, { [field]: value });
   };
 
